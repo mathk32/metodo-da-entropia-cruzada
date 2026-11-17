@@ -24,7 +24,7 @@ Na notação da disciplina, o ciclo de Lapan (2020, *The cross-entropy method in
 
 3.  Manter as partidas com $`G_0\ge c_k`$.
 
-4.  Ajustar $`\theta`$ para aumentar $`\ln\pi_\theta(A_t\mid S_t)`$ nos pares mantidos e voltar ao início.
+4.  Ajustar $`\theta`$ para aumentar $`\ln\,\pi_\theta(A_t\mid S_t)`$ nos pares mantidos e voltar ao início.
 
 <div class="center">
 
@@ -36,7 +36,7 @@ Na notação da disciplina, o ciclo de Lapan (2020, *The cross-entropy method in
 
 O agente observa $`S_t`$, escolhe $`A_t`$ e recebe $`R_{t+1}`$ junto de $`S_{t+1}`$. Um episódio é uma tentativa completa. A trajetória $`\tau`$ registra seus estados, ações e recompensas. A política $`\pi_\theta(a\mid s)`$ dá a probabilidade da ação $`a`$ no estado $`s`$ (Leite, 2026, aulas 01–03 e glossário).
 
-O retorno soma as recompensas posteriores a uma decisão. O desconto $`\gamma`$ determina quanto pesa cada passo de espera. Por exemplo, se uma partida rende $`R_1=0`$, $`R_2=0`$ e $`R_3=1`$ e $`\gamma=0{,}9`$, o retorno a partir do início é $`0+0{,}9\cdot0+0{,}9^2\cdot1=0{,}81`$. O desempenho que interessa é a média dos retornos em novas partidas. Se $`T`$ é o número de transições e $`P_\theta`$ a distribuição das trajetórias sob a política, o objetivo episódico é
+O retorno soma as recompensas posteriores a uma decisão. O desconto $`\gamma`$ determina quanto pesa cada passo de espera. Por exemplo, se uma partida rende $`R_1=0`$, $`R_2=0`$ e $`R_3=1`$ e $`\gamma=\text{0,9}`$, o retorno a partir do início é $`0+\text{0,9}\cdot0+\text{0,9}^2\cdot1=\text{0,81}`$. O desempenho que interessa é a média dos retornos em novas partidas. Se $`T`$ é o número de transições e $`P_\theta`$ a distribuição das trajetórias sob a política, o objetivo episódico é
 ``` math
 G_0=\sum_{t=0}^{T-1}\gamma^t R_{t+1},\qquad J(\theta)=\mathbb E_{\tau\sim P_\theta}[G_0(\tau)].
 ```
@@ -48,7 +48,7 @@ As duas regras abaixo mostram o que muda do bandit da aula 02 para o CEM. A prim
 ``` math
 \begin{aligned}
  Q_{n+1}(a)&=Q_n(a)+\frac{1}{n}\big[R_n-Q_n(a)\big],\\
- \theta_{k+1}&\approx\arg\max_\theta\sum_{(s,a)\in\mathcal D_k}\ln\pi_\theta(a\mid s).
+ \theta_{k+1}&\approx\arg\max_\theta\sum_{(s,a)\in\mathcal D_k}\ln\,\pi_\theta(a\mid s).
 \end{aligned}
 ```
 A aula 02 escreve $`Q_{k+1}=Q_k+\frac1k[R_k-Q_k]`$. Aqui se usa $`n`$ porque $`k`$ numera os lotes do CEM. $`R_n`$ é a $`n`$-ésima recompensa da ação $`a`$, recebida como $`R_{t+1}`$ no relógio do ambiente (Sutton e Barto, 2018, *Incremental Implementation*). Historicamente, porém, o CEM não veio dos bandits: surgiu na simulação de eventos raros (Rubinstein e Kroese, 2004, prefácio; de Boer et al., 2005, introdução).
@@ -113,42 +113,42 @@ No jogo de um passo, o estado é único, a ação é esquerda (E) ou direita (D)
 
 </div>
 
-Para guardar cerca de 30% das partidas ($`\rho=0{,}3`$), usa-se o percentil 70, valor abaixo do qual ficam cerca de 70% dos retornos. Com os retornos em ordem crescente, ele ocupa a posição $`0{,}7(10-1)=6{,}3`$, contando de zero, isto é, entre o 7.º valor (3) e o 8.º (4). Interpolando, como faz `numpy.percentile` por padrão (NumPy, 2025), o corte vale $`3+0{,}3\cdot(4-3)=3{,}3`$. Passam as partidas de retornos 4, 5 e 6, com ações D, E e D (Lapan, 2020, *The cross-entropy method on CartPole*, função `filter_batch`). [Explorar o corte](https://metodo-da-entropia-cruzada.vercel.app/selecao.html).
+Para guardar cerca de 30% das partidas ($`\rho=\text{0,3}`$), usa-se o percentil 70, valor abaixo do qual ficam cerca de 70% dos retornos. Com os retornos em ordem crescente, ele ocupa a posição $`\text{0,7}(10-1)=\text{6,3}`$, contando de zero, isto é, entre o 7.º valor (3) e o 8.º (4). Interpolando, como faz `numpy.percentile` por padrão (NumPy, 2025), o corte vale $`3+\text{0,3}\cdot(4-3)=\text{3,3}`$. Passam as partidas de retornos 4, 5 e 6, com ações D, E e D (Lapan, 2020, *The cross-entropy method on CartPole*, função `filter_batch`). [Explorar o corte](https://metodo-da-entropia-cruzada.vercel.app/selecao.html).
 
 A verossimilhança é a probabilidade dos dados observados como função dos parâmetros. Com $`u=\pi(D)`$, reproduzir a elite D, E, D tem probabilidade $`u\cdot(1-u)\cdot u`$. Logo, a verossimilhança é $`\Lambda(u)=u^2(1-u)`$. O logaritmo preserva o ponto máximo e transforma o produto em soma. A derivada do logaritmo se anula em $`u=2/3`$ e a segunda derivada é negativa:
 ``` math
-\ell(u)=2\ln u+\ln(1-u),\qquad \ell'(u)=\frac2u-\frac1{1-u}.
+\ell(u)=2\ln\,u+\ln\,(1-u),\qquad \ell'(u)=\frac2u-\frac1{1-u}.
 ```
 O máximo $`u=2/3`$ copia a frequência de D na elite. Trocar o sinal permite minimizar uma perda; dividir por três dá a perda por decisão. Agrupando ações pela frequência $`f`$ da elite, obtém-se a entropia cruzada
 ``` math
-H(f,\pi)=-\sum_a f(a)\ln\pi(a)=-\tfrac23\ln u-\tfrac13\ln(1-u).
+H(f,\pi)=-\sum_a f(a)\ln\,\pi(a)=-\tfrac23\ln\,u-\tfrac13\ln\,(1-u).
 ```
 
-A tabela permite verificar se imitar a elite maximiza o retorno estimado. D rende em média $`13/5=2{,}6`$ e E, $`11/5=2{,}2`$. Logo, o retorno estimado $`2{,}6u+2{,}2(1-u)`$ cresce até $`u=1`$, enquanto a imitação escolhe $`u=2/3`$. Portanto, o CEM imita a elite; ele não escolhe a política de maior retorno estimado. Repetir a coleta e a seleção pode elevar os retornos e o corte; não há melhora garantida a cada lote.
+A tabela permite verificar se imitar a elite maximiza o retorno estimado. D rende em média $`13/5=\text{2,6}`$ e E, $`11/5=\text{2,2}`$. Logo, o retorno estimado $`\text{2,6}u+\text{2,2}(1-u)`$ cresce até $`u=1`$, enquanto a imitação escolhe $`u=2/3`$. Portanto, o CEM imita a elite; ele não escolhe a política de maior retorno estimado. Repetir a coleta e a seleção pode elevar os retornos e o corte; não há melhora garantida a cada lote.
 
 ### Formalização do ajuste da política
 
 Seja $`\mathcal E_k`$ o conjunto de índices aceitos, $`T_i`$ a duração do episódio $`i`$ e $`M=\sum_{i\in\mathcal E_k}T_i`$ a quantidade de decisões aceitas. Generalizando a perda do jogo para todos os pares estado–ação aceitos, define-se, para $`M>0`$:
 ``` math
 L_k(\theta)=-\frac1M\sum_{i\in\mathcal E_k}\sum_{t=0}^{T_i-1}
-       \ln\pi_\theta(a_{it}\mid s_{it}).
+       \ln\,\pi_\theta(a_{it}\mid s_{it}).
 ```
 A perda mede quão improváveis são as ações aceitas sob a política atual.
 
-Uma tabela exata para estados contínuos precisaria de infinitas linhas. Uma função com pesos compartilhados responde também a observações novas. A rede do exemplo CartPole de Lapan (2020, *The cross-entropy method on CartPole*) usa 128 unidades ocultas com ativação $`\operatorname{ReLU}(x)=\max(0,x)`$. A saída atribui a cada ação uma preferência $`h_b=h(s,b,\theta)`$. A softmax normaliza preferências exponenciadas. Escrevendo a perda do rótulo $`a`$ como $`-h_a+\ln\sum_j e^{h_j}`$, obtém-se:
+Uma tabela exata para estados contínuos precisaria de infinitas linhas. Uma função com pesos compartilhados responde também a observações novas. A rede do exemplo CartPole de Lapan (2020, *The cross-entropy method on CartPole*) usa 128 unidades ocultas com ativação $`\mathrm{ReLU}(x)=\max(0,x)`$. A saída atribui a cada ação uma preferência $`h_b=h(s,b,\theta)`$. A softmax normaliza preferências exponenciadas. Escrevendo a perda do rótulo $`a`$ como $`-h_a+\ln\,\sum_j e^{h_j}`$, obtém-se:
 ``` math
 \pi_\theta(b\mid s)=\frac{e^{h_b}}{\sum_j e^{h_j}},\qquad
- \frac{\partial[-\ln\pi_\theta(a\mid s)]}{\partial h_b}
+ \frac{\partial[-\ln\,\pi_\theta(a\mid s)]}{\partial h_b}
  =\pi_\theta(b\mid s)-\mathbf 1\{a=b\}.
 ```
-No conjunto de decisões, o gradiente médio é probabilidade prevista menos frequência observada. Descer o gradiente aproxima essas distribuições. No mesmo jogo de um passo, considere agora uma elite de dez decisões: duas E e oito D, como na página Política. Com um parâmetro por ação e $`\alpha=0{,}5`$, um passo de descida produz:
+No conjunto de decisões, o gradiente médio é probabilidade prevista menos frequência observada. Descer o gradiente aproxima essas distribuições. No mesmo jogo de um passo, considere agora uma elite de dez decisões: duas E e oito D, como na página Política. Com um parâmetro por ação e $`\alpha=\text{0,5}`$, um passo de descida produz:
 
 <div class="center">
 
-| Ação     | Logit inicial | Prob. inicial | Gradiente  | Novo logit  | Nova prob. |
-|:---------|:-------------:|:-------------:|:----------:|:-----------:|:----------:|
-| Esquerda |       0       |      0,5      | $`+0{,}3`$ | $`-0{,}15`$ |   0,426    |
-| Direita  |       0       |      0,5      | $`-0{,}3`$ | $`+0{,}15`$ |   0,574    |
+| Ação | Logit inicial | Prob. inicial | Gradiente | Novo logit | Nova prob. |
+|:---|:--:|:--:|:--:|:--:|:--:|
+| Esquerda | 0 | 0,5 | $`+\text{0,3}`$ | $`-\text{0,15}`$ | 0,426 |
+| Direita | 0 | 0,5 | $`-\text{0,3}`$ | $`+\text{0,15}`$ | 0,574 |
 
 </div>
 
@@ -165,12 +165,12 @@ Esta parte opcional explica o nome do método: aproximar a distribuição das tr
 **2. Aproximar a elite.** Escolha $`I_k(\tau)=\mathbf 1\{G_0(\tau)\geq c_k\}`$. Para limiar fixo e $`Z_k=\mathbb E_{P_{\theta_k}}[I_k]>0`$, a distribuição das trajetórias aceitas é $`\widetilde P_k=P_{\theta_k}I_k/Z_k`$. A divergência de Kullback–Leibler mede quanto uma distribuição candidata se afasta dessa referência. Expandir o logaritmo da razão dá
 ``` math
 D_{\mathrm{KL}}(\widetilde P_k\Vert P_\theta)
- =\mathbb E_{\widetilde P_k}[\ln\widetilde P_k]-\mathbb E_{\widetilde P_k}[\ln P_\theta]
+ =\mathbb E_{\widetilde P_k}[\ln\,\widetilde P_k]-\mathbb E_{\widetilde P_k}[\ln\,P_\theta]
  =-H(\widetilde P_k)+H(\widetilde P_k,P_\theta).
 ```
 O primeiro termo é o *negativo* da entropia da referência e fica constante durante o ajuste. O segundo é a entropia cruzada. Substituindo a distribuição condicionada, obtém-se
 ``` math
-H(\widetilde P_k,P_\theta)=-\frac1{Z_k}\mathbb E_{P_{\theta_k}}[I_k\ln P_\theta].
+H(\widetilde P_k,P_\theta)=-\frac1{Z_k}\mathbb E_{P_{\theta_k}}[I_k\ln\,P_\theta].
 ```
 Como $`Z_k`$ não depende do parâmetro em ajuste, o fator positivo $`1/Z_k`$ não muda o minimizador.
 
@@ -179,17 +179,17 @@ Como $`Z_k`$ não depende do parâmetro em ajuste, o fator positivo $`1/Z_k`$ n�
 Para $`T`$ passos, a regra do produto separa o estado inicial, as ações e as transições. Tomando logaritmos, obtém-se
 ``` math
 \begin{aligned}
- \ln P_\theta(\tau)={}&\ln d_0(s_0)+\sum_{t=0}^{T-1}\ln\pi_\theta(a_t\mid s_t)\\
- &+\sum_{t=0}^{T-1}\ln p(s_{t+1},r_{t+1}\mid s_t,a_t).
+ \ln\,P_\theta(\tau)={}&\ln\,d_0(s_0)+\sum_{t=0}^{T-1}\ln\,\pi_\theta(a_t\mid s_t)\\
+ &+\sum_{t=0}^{T-1}\ln\,p(s_{t+1},r_{t+1}\mid s_t,a_t).
 \end{aligned}
 ```
 Somente a parcela das ações depende de $`\theta`$. Substituir a esperança pela amostra e normalizar pelas $`M`$ decisões aceitas recupera a perda $`L_k`$ da formalização. De Boer et al. (2005, *Markovian decision process*) estimam, entre as trajetórias de elite que visitam o estado $`z`$, a fração que escolhe a ação $`a`$ nesse estado para o ajuste por máxima verossimilhança.
 
 ### Divergências entre as fontes
 
-Na formulação de Lapan (2020, *The theoretical background of the cross-entropy method*), $`x`$ pode designar uma política candidata e $`\mathbb E_p[\ln p]`$ recebe o nome de entropia. Pela convenção $`H(p)=-\mathbb E_p[\ln p]`$, esse termo equivale a $`-H(p)`$. Para de Boer et al. (2005, *The CE method for rare event simulation*), $`x`$ é uma amostra genérica. Aqui, $`x`$ é a trajetória $`\tau`$.
+Na formulação de Lapan (2020, *The theoretical background of the cross-entropy method*), $`x`$ pode designar uma política candidata e $`\mathbb E_p[\ln\,p]`$ recebe o nome de entropia. Pela convenção $`H(p)=-\mathbb E_p[\ln\,p]`$, esse termo equivale a $`-H(p)`$. Para de Boer et al. (2005, *The CE method for rare event simulation*), $`x`$ é uma amostra genérica. Aqui, $`x`$ é a trajetória $`\tau`$.
 
-De Boer et al. (2005, *A rare event simulation example* e *The CE method for rare event simulation*) tomam como limiar a estatística de ordem $`S_{(\lceil(1-\rho)N\rceil)}`$, isto é, o valor observado na posição $`\lceil(1-\rho)N\rceil`$ da amostra ordenada, sem interpolar. O teto $`\lceil x\rceil`$ arredonda $`x`$ para cima. Kroese (2011) usa outra convenção: $`N_e=\lceil\rho N\rceil`$ e limiar $`S_{(N-N_e+1)}`$. Quando $`\rho N`$ é inteiro, o limiar de Kroese fica uma posição acima; nos demais casos, os dois coincidem. Em ambos, empates no limiar podem ampliar a elite. De Boer et al. indicam frações tipicamente entre 0,01 e 0,1 (*A rare event simulation example*) e, na discussão sobre a escolha de $`\rho`$ (*The CE-method for combinatorial optimization*), $`\rho\approx0{,}01`$ para problemas de dimensão $`n\ge100`$ ou $`\rho\approx\ln(n)/n`$ para $`n<100`$; aqui, $`n`$ é o tamanho do problema e $`N`$, o do lote. No CartPole, Lapan (2020, *The cross-entropy method on CartPole*) chama `numpy.percentile`, cuja interpolação padrão é linear (NumPy, 2025), e usa $`\rho=0{,}3`$, uma fração bem maior.
+De Boer et al. (2005, *A rare event simulation example* e *The CE method for rare event simulation*) tomam como limiar a estatística de ordem $`S_{(\lceil(1-\rho)N\rceil)}`$, isto é, o valor observado na posição $`\lceil(1-\rho)N\rceil`$ da amostra ordenada, sem interpolar. O teto $`\lceil x\rceil`$ arredonda $`x`$ para cima. Kroese (2011) usa outra convenção: $`N_e=\lceil\rho N\rceil`$ e limiar $`S_{(N-N_e+1)}`$. Quando $`\rho N`$ é inteiro, o limiar de Kroese fica uma posição acima; nos demais casos, os dois coincidem. Em ambos, empates no limiar podem ampliar a elite. De Boer et al. indicam frações tipicamente entre 0,01 e 0,1 (*A rare event simulation example*) e, na discussão sobre a escolha de $`\rho`$ (*The CE-method for combinatorial optimization*), $`\rho\approx\text{0,01}`$ para problemas de dimensão $`n\ge100`$ ou $`\rho\approx\ln\,(n)/n`$ para $`n<100`$; aqui, $`n`$ é o tamanho do problema e $`N`$, o do lote. No CartPole, Lapan (2020, *The cross-entropy method on CartPole*) chama `numpy.percentile`, cuja interpolação padrão é linear (NumPy, 2025), e usa $`\rho=\text{0,3}`$, uma fração bem maior.
 
 Na descrição do ciclo, Lapan (2020, *The cross-entropy method in practice*) descarta apenas os episódios abaixo do limiar; os empates ficam. Em *The cross-entropy method on CartPole*, o texto fala em retorno superior ao limiar, mas a função `filter_batch` de [`01_cartpole.py`](https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/01_cartpole.py) também aceita empates. Só o lago modificado, em [`03_frozenlake_tweaked.py`](https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/03_frozenlake_tweaked.py), exige escore estritamente superior. A [implementação da terceira edição](https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Third-Edition/tree/main/Chapter04) conserva as duas regras (Lapan, 2024, *The cross-entropy method on CartPole* e *The cross-entropy method on FrozenLake*).
 
@@ -219,7 +219,7 @@ As regras de corte seguem as funções `filter_batch` dos exemplos CartPole (inc
 >
 > &emsp;&emsp;Repita $`n_g`$ vezes, com softmax por linha:
 >
-> &emsp;&emsp;&emsp;&emsp;$`P\gets\operatorname{softmax}(X\theta)`$.
+> &emsp;&emsp;&emsp;&emsp;$`P\gets\mathrm{softmax}(X\theta)`$.
 >
 > &emsp;&emsp;&emsp;&emsp;$`\theta\gets\theta-\alpha X^\top(P-Y)/M`$.
 
@@ -236,7 +236,7 @@ A política linear deixa o gradiente visível em NumPy. O exemplo do livro e a c
 | Escolha | Lapan (2020, *The cross-entropy method on CartPole*) | Implementação deste material |
 |:---|:---|:---|
 | Política | Rede com 128 unidades ReLU | Softmax linear com atributos escalados |
-| Ajuste por lote | PyTorch, um passo Adam a 0,01 | NumPy, oito passos a $`\alpha=0{,}8`$ |
+| Ajuste por lote | PyTorch, um passo Adam a 0,01 | NumPy, oito passos a $`\alpha=\text{0,8}`$ |
 | Parada | Retorno médio superior a 199 | Orçamento de 30 lotes |
 | Ambiente | Gym, CartPole-v0, até 200 passos | Gymnasium 1.1.1, CartPole-v1, até 500 passos |
 
@@ -263,15 +263,15 @@ Comparam-se: (1) no CartPole, retirar a seleção e variar $`\rho`$; (2) no lago
 |:------------------------------|----------------:|---------------------:|
 | Política uniforme             |           22,59 |          21,18–24,45 |
 | Treino com todos ($`\rho=1`$) |           22,04 |          12,90–45,74 |
-| CEM ($`\rho=0{,}6`$)          |          192,17 |        110,44–297,50 |
-| CEM ($`\rho=0{,}3`$)          |          273,37 |        174,95–349,14 |
-| CEM ($`\rho=0{,}1`$)          |          408,73 |        358,21–429,46 |
+| CEM ($`\rho=\text{0,6}`$)     |          192,17 |        110,44–297,50 |
+| CEM ($`\rho=\text{0,3}`$)     |          273,37 |        174,95–349,14 |
+| CEM ($`\rho=\text{0,1}`$)     |          408,73 |        358,21–429,46 |
 
 </div>
 
 Os valores foram obtidos em Windows; a reprodução em Linux está no `scripts/README.md`. Como previsto, treinar com todos os episódios manteve a média perto da política uniforme, e a seleção multiplicou a duração das partidas. Perto do fim, porém, muitas atingem o teto de 500 passos: o corte chegou a 500 em 61 de 150 lotes, e os empates deixaram passar até 14 episódios, sem distinguir as melhores.
 
-No lago, comparam-se as regras a $`\rho=0{,}3`$, sem desconto. Cada célula conta sucessos nos 400 episódios finais de uma configuração.
+No lago, comparam-se as regras a $`\rho=\text{0,3}`$, sem desconto. Cada célula conta sucessos nos 400 episódios finais de uma configuração.
 
 <div class="center">
 
@@ -285,16 +285,16 @@ No lago, comparam-se as regras a $`\rho=0{,}3`$, sem desconto. Cada célula cont
 
 Num lote típico do gelo, com quinze derrotas e uma vitória, o percentil 70 vale zero: a regra inclusiva deixa passar as dezesseis partidas, nesse corte, e repete a situação de $`\rho=1`$; a estrita imita só a vitória.
 
-A regra estrita tem, porém, um ponto cego. Com $`N=16`$, o percentil 70 fica na posição $`0{,}7(16-1)=10{,}5`$: vale zero com até quatro vitórias, 0,5 com cinco e um com seis ou mais. Neste último caso nenhuma vitória supera o corte, e o lote não ensina nada. Isso explica 86 dos 109 lotes vazios no piso firme; os outros 23, e os 92 do gelo, não tiveram vitória. Esse bloqueio ajuda a explicar os 52,5% observados; o valor não é um teto matemático do método nem da regra.
+A regra estrita tem, porém, um ponto cego. Com $`N=16`$, o percentil 70 fica na posição $`\text{0,7}(16-1)=\text{10,5}`$: vale zero com até quatro vitórias, 0,5 com cinco e um com seis ou mais. Neste último caso nenhuma vitória supera o corte, e o lote não ensina nada. Isso explica 86 dos 109 lotes vazios no piso firme; os outros 23, e os 92 do gelo, não tiveram vitória. Esse bloqueio ajuda a explicar os 52,5% observados; o valor não é um teto matemático do método nem da regra.
 
-Com $`\gamma=0{,}9`$, o escore $`R\gamma^T`$ desempata as vitórias pela duração: no piso firme, elas passaram de 210 para 352 em 400, e os lotes vazios caíram de 109 para 75. No gelo nada mudou: nenhum lote teve mais de três vitórias, o corte ficou em zero e toda vitória passou com ou sem desconto.
+Com $`\gamma=\text{0,9}`$, o escore $`R\gamma^T`$ desempata as vitórias pela duração: no piso firme, elas passaram de 210 para 352 em 400, e os lotes vazios caíram de 109 para 75. No gelo nada mudou: nenhum lote teve mais de três vitórias, o corte ficou em zero e toda vitória passou com ou sem desconto.
 
 <figure data-latex-placement="H">
 <img src="media/comparacao.png" style="width:94.0%" />
 <figcaption>À esquerda, médias e extremos por lote no CartPole e médias finais de cada semente, com a média entre sementes marcada por um traço. À direita, médias por lote e faixas mínimo–máximo no FrozenLake, com e sem deslizamento. No gelo, as curvas estritas com <span class="math inline"><em>γ</em></span> igual a 1 e 0,9 coincidem.</figcaption>
 </figure>
 
-No CartPole, $`\rho=0{,}1`$ atingiu 460,59 passos com $`\alpha=2`$ e caiu para 34,65 com $`\alpha=5`$. Aumentar a taxa além do melhor valor testado piorou as duas curvas; com $`\alpha=5`$ e $`\rho=0{,}3`$, a média ficou abaixo da política uniforme (11,42 contra 22,59). Passos grandes podem concentrar cedo demais a política em escolhas ruins. [Resultados por configuração](https://metodo-da-entropia-cruzada.vercel.app/resumo.csv).
+No CartPole, $`\rho=\text{0,1}`$ atingiu 460,59 passos com $`\alpha=2`$ e caiu para 34,65 com $`\alpha=5`$. Aumentar a taxa além do melhor valor testado piorou as duas curvas; com $`\alpha=5`$ e $`\rho=\text{0,3}`$, a média ficou abaixo da política uniforme (11,42 contra 22,59). Passos grandes podem concentrar cedo demais a política em escolhas ruins. [Resultados por configuração](https://metodo-da-entropia-cruzada.vercel.app/resumo.csv).
 
 <figure data-latex-placement="H">
 <img src="media/varredura-alpha.png" style="width:80.0%" />
@@ -307,9 +307,9 @@ Selecionar a elite melhorou o carrinho; aceitar todos preservou o desempenho da 
 
 ## Limites e continuidade
 
-Os resultados concretizam as limitações discutidas por Lapan (2020, *The cross-entropy method on FrozenLake*). Esperar o fim custa até 500 transições por episódio no CartPole; o teto ainda empata partidas longas. No lago, retornos 0/1 pouco variados tornam o corte pouco informativo. Por fim, todas as decisões de uma partida aceita recebem o mesmo peso na perda, mesmo as que atrasaram a meta: o filtro não atribui crédito individual. A robustez mencionada por Lapan (2020, *The cross-entropy method in practice*) depende da configuração: a média do carrinho variou de 192,17 a 408,73 entre $`\rho=0{,}6`$ e $`\rho=0{,}1`$.
+Os resultados concretizam as limitações discutidas por Lapan (2020, *The cross-entropy method on FrozenLake*). Esperar o fim custa até 500 transições por episódio no CartPole; o teto ainda empata partidas longas. No lago, retornos 0/1 pouco variados tornam o corte pouco informativo. Por fim, todas as decisões de uma partida aceita recebem o mesmo peso na perda, mesmo as que atrasaram a meta: o filtro não atribui crédito individual. A robustez mencionada por Lapan (2020, *The cross-entropy method in practice*) depende da configuração: a média do carrinho variou de 192,17 a 408,73 entre $`\rho=\text{0,6}`$ e $`\rho=\text{0,1}`$.
 
-No lago, o escore $`R\gamma^T`$ favorece vitórias curtas (com $`\gamma=0{,}9`$, seis e dez passos valem 0,53 e 0,35), mas vitórias de mesma duração ainda empatam. A variante de Lapan (2020, *The cross-entropy method on FrozenLake*) também amplia o lote para 100 e reaproveita elites antigas; aqui só o escore muda.
+No lago, o escore $`R\gamma^T`$ favorece vitórias curtas (com $`\gamma=\text{0,9}`$, seis e dez passos valem 0,53 e 0,35), mas vitórias de mesma duração ainda empatam. A variante de Lapan (2020, *The cross-entropy method on FrozenLake*) também amplia o lote para 100 e reaproveita elites antigas; aqui só o escore muda.
 
 Os métodos seguintes do curso atacam essas limitações. O Q-learning propaga valor a estados anteriores a partir de cada transição, sem esperar o fim da partida (Sutton e Barto, 2018, *Q-learning: Off-policy TD Control*). Na família baseada em política, o REINFORCE pesa cada escolha pelo retorno seguinte, em vez de um peso 0 ou 1 (Sutton e Barto, 2018, *REINFORCE: Monte Carlo Policy Gradient*).
 

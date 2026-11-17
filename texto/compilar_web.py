@@ -125,6 +125,12 @@ def atualizar_readme():
     inicio, resto = arquivo.read_text(encoding="utf-8").split("<!-- teoria:inicio -->")
     _, fim = resto.split("<!-- teoria:fim -->")
     corpo = corpo_texto().replace("../media/", "media/")
+    # Compatibilidade tipográfica do README com o renderizador do GitHub.
+    # Um decimal inteiro em texto evita que a vírgula seja tratada como pontuação.
+    corpo = re.sub(r"(\d+)\{,\}(\d+)", r"\\text{\1,\2}", corpo)
+    corpo = corpo.replace(r"\operatorname{ReLU}", r"\mathrm{ReLU}")
+    corpo = corpo.replace(r"\operatorname{softmax}", r"\mathrm{softmax}")
+    corpo = re.sub(r"\\ln\b\s*(?!\\,)", lambda _: r"\ln\,", corpo)
     comando = [PANDOC, "-f", "latex", "-t", "gfm+tex_math_dollars", "--wrap=none",
                "--shift-heading-level-by=1"]
     proc = subprocess.run(comando, input=corpo, encoding="utf-8", text=True,
