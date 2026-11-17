@@ -131,6 +131,11 @@ def atualizar_readme():
     corpo = corpo.replace(r"\operatorname{ReLU}", r"\mathrm{ReLU}")
     corpo = corpo.replace(r"\operatorname{softmax}", r"\mathrm{softmax}")
     corpo = re.sub(r"\\ln\b\s*(?!\\,)", lambda _: r"\ln\,", corpo)
+    # Glifos Unicode explícitos não dependem do mathvariant do MathML no Chrome.
+    for comando, letra, glifo in (("mathbb", "E", "𝔼"), ("mathcal", "E", "ℰ"),
+                                  ("mathcal", "D", "𝒟"), ("mathbf", "1", "𝟏")):
+        padrao = rf"\\{comando}\s*(?:\{{\s*{letra}\s*\}}|{letra})"
+        corpo = re.sub(padrao, lambda _, g=glifo: rf"\text{{{g}}}", corpo)
     comando = [PANDOC, "-f", "latex", "-t", "gfm+tex_math_dollars", "--wrap=none",
                "--shift-heading-level-by=1"]
     proc = subprocess.run(comando, input=corpo, encoding="utf-8", text=True,

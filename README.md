@@ -38,17 +38,17 @@ O agente observa $`S_t`$, escolhe $`A_t`$ e recebe $`R_{t+1}`$ junto de $`S_{t+1
 
 O retorno soma as recompensas posteriores a uma decisão. O desconto $`\gamma`$ determina quanto pesa cada passo de espera. Por exemplo, se uma partida rende $`R_1=0`$, $`R_2=0`$ e $`R_3=1`$ e $`\gamma=\text{0,9}`$, o retorno a partir do início é $`0+\text{0,9}\cdot0+\text{0,9}^2\cdot1=\text{0,81}`$. O desempenho que interessa é a média dos retornos em novas partidas. Se $`T`$ é o número de transições e $`P_\theta`$ a distribuição das trajetórias sob a política, o objetivo episódico é
 ``` math
-G_0=\sum_{t=0}^{T-1}\gamma^t R_{t+1},\qquad J(\theta)=\mathbb E_{\tau\sim P_\theta}[G_0(\tau)].
+G_0=\sum_{t=0}^{T-1}\gamma^t R_{t+1},\qquad J(\theta)=\text{𝔼}_{\tau\sim P_\theta}[G_0(\tau)].
 ```
 A esperança abrange o estado inicial, os sorteios da política e as respostas aleatórias do ambiente. A média dos retornos de um lote estima $`J`$ antes de qualquer seleção (Sutton e Barto, 2018, *Returns and Episodes*; *The Policy Gradient Theorem*).
 
 ### Da média de uma ação à política condicionada ao estado
 
-As duas regras abaixo mostram o que muda do bandit da aula 02 para o CEM. A primeira corrige a média da ação $`a`$ a cada recompensa. A segunda escolhe os parâmetros $`\theta`$ que tornam mais prováveis os pares estado–ação da elite $`\mathcal D_k`$, contando repetições.
+As duas regras abaixo mostram o que muda do bandit da aula 02 para o CEM. A primeira corrige a média da ação $`a`$ a cada recompensa. A segunda escolhe os parâmetros $`\theta`$ que tornam mais prováveis os pares estado–ação da elite $`\text{𝒟}_k`$, contando repetições.
 ``` math
 \begin{aligned}
  Q_{n+1}(a)&=Q_n(a)+\frac{1}{n}\big[R_n-Q_n(a)\big],\\
- \theta_{k+1}&\approx\arg\max_\theta\sum_{(s,a)\in\mathcal D_k}\ln\,\pi_\theta(a\mid s).
+ \theta_{k+1}&\approx\arg\max_\theta\sum_{(s,a)\in\text{𝒟}_k}\ln\,\pi_\theta(a\mid s).
 \end{aligned}
 ```
 A aula 02 escreve $`Q_{k+1}=Q_k+\frac1k[R_k-Q_k]`$. Aqui se usa $`n`$ porque $`k`$ numera os lotes do CEM. $`R_n`$ é a $`n`$-ésima recompensa da ação $`a`$, recebida como $`R_{t+1}`$ no relógio do ambiente (Sutton e Barto, 2018, *Incremental Implementation*). Historicamente, porém, o CEM não veio dos bandits: surgiu na simulação de eventos raros (Rubinstein e Kroese, 2004, prefácio; de Boer et al., 2005, introdução).
@@ -94,7 +94,7 @@ A tabela serve de consulta; os símbolos são definidos ao longo do texto.
 | Sutton e Barto, política softmax | $`\pi(a\mid s,\theta)=\pi_\theta(a\mid s)`$ | Política parametrizada, com preferência $`h(s,a,\theta)`$ |
 | Código | `theta, alpha, rho` | Pesos $`\theta`$, taxa $`\alpha`$, fração $`\rho`$. Na atualização suavizada de de Boer et al., $`\alpha`$ suaviza parâmetros |
 | Código | `G0, R_proximo, corte` | Retorno, recompensa $`R_{t+1}`$ e limiar $`c_k`$ |
-| Código | `elite, passos, lote` | Episódios aceitos $`\mathcal E_k`$, passos $`n_g`$ e episódios por lote $`N`$ |
+| Código | `elite, passos, lote` | Episódios aceitos $`\text{ℰ}_k`$, passos $`n_g`$ e episódios por lote $`N`$ |
 
 </div>
 
@@ -128,9 +128,9 @@ A tabela permite verificar se imitar a elite maximiza o retorno estimado. D rend
 
 ### Formalização do ajuste da política
 
-Seja $`\mathcal E_k`$ o conjunto de índices aceitos, $`T_i`$ a duração do episódio $`i`$ e $`M=\sum_{i\in\mathcal E_k}T_i`$ a quantidade de decisões aceitas. Generalizando a perda do jogo para todos os pares estado–ação aceitos, define-se, para $`M>0`$:
+Seja $`\text{ℰ}_k`$ o conjunto de índices aceitos, $`T_i`$ a duração do episódio $`i`$ e $`M=\sum_{i\in\text{ℰ}_k}T_i`$ a quantidade de decisões aceitas. Generalizando a perda do jogo para todos os pares estado–ação aceitos, define-se, para $`M>0`$:
 ``` math
-L_k(\theta)=-\frac1M\sum_{i\in\mathcal E_k}\sum_{t=0}^{T_i-1}
+L_k(\theta)=-\frac1M\sum_{i\in\text{ℰ}_k}\sum_{t=0}^{T_i-1}
        \ln\,\pi_\theta(a_{it}\mid s_{it}).
 ```
 A perda mede quão improváveis são as ações aceitas sob a política atual.
@@ -139,7 +139,7 @@ Uma tabela exata para estados contínuos precisaria de infinitas linhas. Uma fun
 ``` math
 \pi_\theta(b\mid s)=\frac{e^{h_b}}{\sum_j e^{h_j}},\qquad
  \frac{\partial[-\ln\,\pi_\theta(a\mid s)]}{\partial h_b}
- =\pi_\theta(b\mid s)-\mathbf 1\{a=b\}.
+ =\pi_\theta(b\mid s)-\text{𝟏}\{a=b\}.
 ```
 No conjunto de decisões, o gradiente médio é probabilidade prevista menos frequência observada. Descer o gradiente aproxima essas distribuições. No mesmo jogo de um passo, considere agora uma elite de dez decisões: duas E e oito D, como na página Política. Com um parâmetro por ação e $`\alpha=\text{0,5}`$, um passo de descida produz:
 
@@ -160,17 +160,17 @@ Esta parte opcional explica o nome do método: aproximar a distribuição das tr
 
 **1. Mudar a amostragem.** A mesma esperança pode ser estimada com outra distribuição. Se $`q`$ atribui probabilidade positiva onde $`P(\tau)F(\tau)`$ contribui para a média, a razão de densidades abaixo compensa a mudança de medida. Neste caso, a amostra é uma trajetória (de Boer et al., 2005, *A rare event simulation example*):
 ``` math
-\mathbb E_P[F(\tau)]=\mathbb E_q\!\left[\frac{P(\tau)}{q(\tau)}F(\tau)\right].
+\text{𝔼}_P[F(\tau)]=\text{𝔼}_q\!\left[\frac{P(\tau)}{q(\tau)}F(\tau)\right].
 ```
-**2. Aproximar a elite.** Escolha $`I_k(\tau)=\mathbf 1\{G_0(\tau)\geq c_k\}`$. Para limiar fixo e $`Z_k=\mathbb E_{P_{\theta_k}}[I_k]>0`$, a distribuição das trajetórias aceitas é $`\widetilde P_k=P_{\theta_k}I_k/Z_k`$. A divergência de Kullback–Leibler mede quanto uma distribuição candidata se afasta dessa referência. Expandir o logaritmo da razão dá
+**2. Aproximar a elite.** Escolha $`I_k(\tau)=\text{𝟏}\{G_0(\tau)\geq c_k\}`$. Para limiar fixo e $`Z_k=\text{𝔼}_{P_{\theta_k}}[I_k]>0`$, a distribuição das trajetórias aceitas é $`\widetilde P_k=P_{\theta_k}I_k/Z_k`$. A divergência de Kullback–Leibler mede quanto uma distribuição candidata se afasta dessa referência. Expandir o logaritmo da razão dá
 ``` math
 D_{\mathrm{KL}}(\widetilde P_k\Vert P_\theta)
- =\mathbb E_{\widetilde P_k}[\ln\,\widetilde P_k]-\mathbb E_{\widetilde P_k}[\ln\,P_\theta]
+ =\text{𝔼}_{\widetilde P_k}[\ln\,\widetilde P_k]-\text{𝔼}_{\widetilde P_k}[\ln\,P_\theta]
  =-H(\widetilde P_k)+H(\widetilde P_k,P_\theta).
 ```
 O primeiro termo é o *negativo* da entropia da referência e fica constante durante o ajuste. O segundo é a entropia cruzada. Substituindo a distribuição condicionada, obtém-se
 ``` math
-H(\widetilde P_k,P_\theta)=-\frac1{Z_k}\mathbb E_{P_{\theta_k}}[I_k\ln\,P_\theta].
+H(\widetilde P_k,P_\theta)=-\frac1{Z_k}\text{𝔼}_{P_{\theta_k}}[I_k\ln\,P_\theta].
 ```
 Como $`Z_k`$ não depende do parâmetro em ajuste, o fator positivo $`1/Z_k`$ não muda o minimizador.
 
@@ -187,7 +187,7 @@ Somente a parcela das ações depende de $`\theta`$. Substituir a esperança pel
 
 ### Divergências entre as fontes
 
-Na formulação de Lapan (2020, *The theoretical background of the cross-entropy method*), $`x`$ pode designar uma política candidata e $`\mathbb E_p[\ln\,p]`$ recebe o nome de entropia. Pela convenção $`H(p)=-\mathbb E_p[\ln\,p]`$, esse termo equivale a $`-H(p)`$. Para de Boer et al. (2005, *The CE method for rare event simulation*), $`x`$ é uma amostra genérica. Aqui, $`x`$ é a trajetória $`\tau`$.
+Na formulação de Lapan (2020, *The theoretical background of the cross-entropy method*), $`x`$ pode designar uma política candidata e $`\text{𝔼}_p[\ln\,p]`$ recebe o nome de entropia. Pela convenção $`H(p)=-\text{𝔼}_p[\ln\,p]`$, esse termo equivale a $`-H(p)`$. Para de Boer et al. (2005, *The CE method for rare event simulation*), $`x`$ é uma amostra genérica. Aqui, $`x`$ é a trajetória $`\tau`$.
 
 De Boer et al. (2005, *A rare event simulation example* e *The CE method for rare event simulation*) tomam como limiar a estatística de ordem $`S_{(\lceil(1-\rho)N\rceil)}`$, isto é, o valor observado na posição $`\lceil(1-\rho)N\rceil`$ da amostra ordenada, sem interpolar. O teto $`\lceil x\rceil`$ arredonda $`x`$ para cima. Kroese (2011) usa outra convenção: $`N_e=\lceil\rho N\rceil`$ e limiar $`S_{(N-N_e+1)}`$. Quando $`\rho N`$ é inteiro, o limiar de Kroese fica uma posição acima; nos demais casos, os dois coincidem. Em ambos, empates no limiar podem ampliar a elite. De Boer et al. indicam frações tipicamente entre 0,01 e 0,1 (*A rare event simulation example*) e, na discussão sobre a escolha de $`\rho`$ (*The CE-method for combinatorial optimization*), $`\rho\approx\text{0,01}`$ para problemas de dimensão $`n\ge100`$ ou $`\rho\approx\ln\,(n)/n`$ para $`n<100`$; aqui, $`n`$ é o tamanho do problema e $`N`$, o do lote. No CartPole, Lapan (2020, *The cross-entropy method on CartPole*) chama `numpy.percentile`, cuja interpolação padrão é linear (NumPy, 2025), e usa $`\rho=\text{0,3}`$, uma fração bem maior.
 
@@ -211,11 +211,11 @@ As regras de corte seguem as funções `filter_batch` dos exemplos CartPole (inc
 >
 > &emsp;&emsp;Calcule $`c_k`$, o quantil linear de ordem $`1-\rho`$ dos $`N`$ escores.
 >
-> &emsp;&emsp;Selecione $`\mathcal E_k=\{i:\widetilde G_i\ge c_k\}`$ (regra estrita: $`\widetilde G_i>c_k`$).
+> &emsp;&emsp;Selecione $`\text{ℰ}_k=\{i:\widetilde G_i\ge c_k\}`$ (regra estrita: $`\widetilde G_i>c_k`$).
 >
-> &emsp;&emsp;Se $`\mathcal E_k`$ estiver vazio, passe ao próximo lote.
+> &emsp;&emsp;Se $`\text{ℰ}_k`$ estiver vazio, passe ao próximo lote.
 >
-> &emsp;&emsp;Empilhe em $`X,Y`$ as $`M=\sum_{i\in\mathcal E_k}T_i`$ decisões aceitas.
+> &emsp;&emsp;Empilhe em $`X,Y`$ as $`M=\sum_{i\in\text{ℰ}_k}T_i`$ decisões aceitas.
 >
 > &emsp;&emsp;Repita $`n_g`$ vezes, com softmax por linha:
 >
@@ -246,10 +246,10 @@ A política linear deixa o gradiente visível em NumPy. O exemplo do livro e a c
 
 ### Previsão
 
-O resíduo de uma decisão é a probabilidade prevista menos o rótulo: $`\pi_\theta(b\mid s)-\mathbf 1\{A=b\}`$, o gradiente da perda no logit da ação $`b`$. Sem seleção, toda decisão vira rótulo e, sob a política que a gerou, a esperança condicional vale
+O resíduo de uma decisão é a probabilidade prevista menos o rótulo: $`\pi_\theta(b\mid s)-\text{𝟏}\{A=b\}`$, o gradiente da perda no logit da ação $`b`$. Sem seleção, toda decisão vira rótulo e, sob a política que a gerou, a esperança condicional vale
 ``` math
-\mathbb E_{A\sim\pi_\theta(\cdot\mid s)}
- [\pi_\theta(b\mid s)-\mathbf 1\{A=b\}]=\pi_\theta(b\mid s)-\Pr(A=b\mid s)=0.
+\text{𝔼}_{A\sim\pi_\theta(\cdot\mid s)}
+ [\pi_\theta(b\mid s)-\text{𝟏}\{A=b\}]=\pi_\theta(b\mid s)-\Pr(A=b\mid s)=0.
 ```
 Assim, imitar as próprias decisões não fornece uma direção esperada de ajuste naquele estado. Por isso, treinar com $`\rho=1`$ deve dar desempenho próximo ao da política uniforme. A previsão vale também para o lago com regra inclusiva quando o corte é zero, porque então a elite é o lote inteiro. A conta vale decisão a decisão. No lote, a divisão pelo número aleatório de decisões $`M`$ e os passos repetidos sobre os mesmos dados podem produzir desvios, que aparecem como deriva entre sementes.
 
