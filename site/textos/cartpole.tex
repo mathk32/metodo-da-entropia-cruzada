@@ -1,0 +1,136 @@
+%%% aprofundamento
+\subsection*{Estado observado}
+A posição horizontal $x$ e a velocidade $v$ descrevem o carrinho. O ângulo $\varphi$, em radianos, e a velocidade angular $\omega$ descrevem a haste. O último atributo é o intercepto.
+\[
+ \phi(s)=\left(\frac{x}{2{,}4},\,v,\,\frac{\varphi}{0{,}21},\,\omega,\,1\right)^\top .
+\]
+
+\subsection*{Da observação ao empurrão}
+A matriz de pesos tem cinco linhas e duas colunas. Cada coluna produz uma pontuação e a softmax fornece as probabilidades de esquerda e direita.
+\[
+ h=\theta^\top\phi(s),\qquad \pi_\theta(a\mid s)=\frac{\exp(h_a)}{\exp(h_E)+\exp(h_D)}.
+\]
+Por exemplo, se $h_E=0$ e $h_D=5\varphi$, inclinações de $0{,}08$ e $-0{,}08$ rad dão chances de direita próximas de $0{,}599$ e $0{,}401$. Para uma decisão D da elite no primeiro estado, a derivada em relação ao coeficiente angular é $(0{,}599-1)\times0{,}08\approx-0{,}0321$.
+
+\subsection*{Retorno e duração}
+Cada passo rende um ponto. Com desconto unitário, o retorno é $G_0=T$. O livro usa o teto de 200 passos da versão v0. As medições em Python usam o teto de 500 da versão v1.
+
+\subsection*{Seleção e ajuste}
+Em um lote de $N$ episódios, o percentil $q$ tem posição $h=(N-1)q/100$ na amostra ordenada, contando de zero. Interpolar os vizinhos de $h$ fornece o limiar $c$.
+
+Cada par $(s_j,a_j)$ dos episódios aceitos contribui para a perda média. Se houver $M>0$ decisões, executam-se oito passos de gradiente com $\alpha=0{,}8$.
+\[
+ L(\theta)=-\frac{1}{M}\sum_{j=1}^{M}\ln\pi_\theta(a_j\mid s_j).
+\]
+
+
+%%% fontes
+\subsection*{Referências}
+\noindent \href{https://gymnasium.farama.org/environments/classic_control/cart_pole/}{Farama Foundation. Especificação do CartPole.}
+
+\noindent Maxim Lapan. \href{https://www.packtpub.com/en-us/product/deep-reinforcement-learning-hands-on-9781838826994}{\emph{Deep Reinforcement Learning Hands-On}}, 2ª ed. (2020), seção \emph{The cross-entropy method on CartPole}. \href{https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/01_cartpole.py}{Código do exemplo CartPole}.
+
+%%% escore
+$G_0=99103$
+
+%%% trecho-1
+\href{index.html}{Experimentos} / Controle
+
+%%% trecho-2
+Por quanto tempo se mantém uma haste em pé quando só se pode empurrar a base para os lados?
+
+%%% trecho-3
+Um carrinho sustenta uma haste articulada. A cada 0,02 s, aplica-se uma força à esquerda ou à direita. O agente observa posição, velocidade, ângulo e velocidade angular. Recebe um ponto por passo, inclusive no passo de queda. O episódio termina quando a haste passa de $12^\circ$, o carrinho ultrapassa 2,4 m a partir do centro ou se atinge o limite de tempo.
+
+%%% trecho-4
+Sorteiam-se empurrões pela política atual e guardam-se os episódios mais longos. As ações tomadas nesses episódios fornecem exemplos de como decidir quando a haste volta a uma posição parecida. Avance um lote de treino e compare o tempo médio de equilíbrio com o da política inicial, que escolhe os lados com a mesma probabilidade. Ao final da página, o código da simulação e dos experimentos em Python está disponível para download.
+
+%%% trecho-5
+O primeiro lote usa uma política uniforme. Reproduza um episódio ou avance passo a passo. Alterar a semente, o tamanho do lote ou a dinâmica inicia uma nova série. Alterar o filtro reclassifica o lote atual.
+
+%%% trecho-6
+Posição
+
+%%% trecho-8
+Velocidade
+
+%%% trecho-10
+Ângulo
+
+%%% trecho-12
+Velocidade angular
+
+%%% trecho-14
+Ação escolhida
+
+%%% trecho-16
+Probabilidade da ação
+
+%%% trecho-18
+Recompensa do passo
+
+%%% trecho-20
+Retorno acumulado
+
+%%% trecho-22
+Situação
+
+%%% trecho-24
+Retorno médio
+
+%%% trecho-26
+Limiar do lote
+
+%%% trecho-28
+Episódios de elite
+
+%%% trecho-30
+Episódio
+
+%%% trecho-32
+Cálculo do escore
+
+%%% trecho-34
+Limiar
+
+%%% trecho-36
+Posição do percentil
+
+%%% trecho-38
+Critério
+
+%%% trecho-40
+Seleção
+
+%%% trecho-42
+Semente inicial
+
+%%% trecho-43
+Episódios por lote
+
+%%% trecho-44
+Limite de passos
+
+%%% trecho-45
+Episódio em exibição
+
+%%% trecho-47
+Episódio
+
+%%% trecho-48
+Passos
+
+%%% trecho-49
+Retorno
+
+%%% trecho-50
+Escore do filtro
+
+%%% trecho-51
+Elite
+
+%%% trecho-52
+Nos últimos cinco lotes das cinco sementes, o CEM com fração de elite nominal de 30\% alcançou 273,37 passos em média, contra 22,59 da política uniforme. As médias finais por semente do CEM variaram de 174,95 a 349,14. O navegador usa seu próprio gerador pseudoaleatório. Os dados publicados foram obtidos em Windows. Numa reprodução em Linux com Python 3.13, NumPy 2.2.6 e Gymnasium 1.1.1, a mesma configuração atingiu 287,57 passos. A ordem das configurações foi preservada.
+
+%%% trecho-53
+O pacote inclui a simulação exibida nas duas páginas, a implementação em Python, as dependências e as instruções para reproduzir as medições.

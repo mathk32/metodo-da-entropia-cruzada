@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Em um único estado, as ações da elite fornecem um alvo observável. Altere a contagem e acompanhe como cada passo de gradiente modifica a probabilidade de agir à direita.">
+    <title>Ajuste da política · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="comum.js"></script>
+    <script defer src="politica.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html" aria-current="page">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main id="conteudo" class="wrap pagina-laboratorio">
+      <header class="hero">
+        <span class="eyebrow">PPGI071 · Aprendizado por reforço</span>
+        <h1>O que muda na política?</h1>
+        <p data-tex="trecho-1">Em um único estado, as ações da elite fornecem um alvo observável. Altere a contagem e acompanhe como cada passo de gradiente modifica a probabilidade de agir à direita.</p>
+      </header>
+      <noscript>Ative o JavaScript para usar os controles do laboratório.</noscript>
+      <section class="lab" aria-labelledby="visual-titulo">
+        <div class="visual">
+          <h2 id="visual-titulo">Probabilidade de agir à direita</h2>
+          <p class="sub" data-tex="trecho-2">Em um lote de dez visitas de elite ao mesmo estado, a ação é esquerda (0) ou direita (1).</p>
+          <div class="probs">
+            <div>
+              <div class="prob-header">
+                <strong data-tex="trecho-3">Política atual <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math></strong><output id="prob">—</output>
+              </div>
+              <div class="track"><div id="barra-p" class="fill"></div></div>
+            </div>
+            <div>
+              <div class="prob-header">
+                <strong data-tex="trecho-4">Frequência da elite</strong><output id="freq">—</output>
+              </div>
+              <div class="track target"><div id="barra-f" class="fill"></div></div>
+            </div>
+          </div>
+          <dl class="metrics" aria-live="polite">
+            <div>
+              <dt data-tex="trecho-5">Perda média</dt>
+              <dd id="perda">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-7">Última variação de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi></semantics></math></dt>
+              <dd id="mudanca">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-9">Passos de gradiente</dt>
+              <dd id="passos">—</dd>
+            </div>
+          </dl>
+          <div class="formula" id="logits" data-tex="logits"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mn>0</mn></msub><mo>=</mo><mn data-numero="z0">0</mn><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>h</mi><mn>1</mn></msub><mo>=</mo><mn data-numero="z1">0</mn></mrow></semantics></math>.</div>
+        </div>
+        <aside class="controls" aria-label="Controles do laboratório">
+          <h2>Parâmetros</h2>
+          <div class="control">
+            <label for="direitas">Ações à direita<output id="direitas-valor" for="direitas">8</output></label><input id="direitas" type="range" min="0" max="10" step="1" value="8">
+          </div>
+          <div class="control">
+            <label for="alpha"><span data-tex="simbolo-alpha">Taxa de passo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math></span><output id="alpha-valor" for="alpha">0.5</output></label><input id="alpha" type="range" min="0.05" max="2" step="0.05" value="0.5">
+          </div>
+          <div class="buttons">
+            <button type="button" id="passo">Aplicar um passo</button><button type="button" class="secondary" id="reiniciar">Reiniciar logits</button>
+          </div>
+          <p class="help" data-tex="trecho-11">O lote permanece fixo entre passos. Reiniciar recupera os dois logits iguais a zero.</p>
+        </aside>
+      </section>
+      <section class="reading">
+        <div>
+          <h2>Da contagem ao gradiente</h2>
+          <p data-tex="trecho-12">Se a elite escolheu a direita oito vezes em dez visitas, sua frequência é 0,8. Com os dois logits inicialmente nulos, a política atribui 0,5 à direita. A derivada da perda em relação ao logit dessa ação vale <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,5</mn><mo>−</mo><mn>0,8</mn></mrow></semantics></math>. Subtrair esse gradiente aumenta o logit da direita e reduz o da esquerda.</p>
+          <p class="formula" data-tex="trecho-13"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>a</mi></msub><mo>←</mo><msub><mi>h</mi><mi>a</mi></msub><mo>−</mo><mi>α</mi><mspace width="0.167em"></mspace><mo stretchy="false" form="prefix">[</mo><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msub><mi>f</mi><mi>a</mi></msub><mo stretchy="false" form="postfix">]</mo><mi>.</mi></mrow></semantics></math></p>
+        </div>
+        <div class="aside">
+          <strong data-tex="trecho-14">Correspondência com o código</strong>
+          <p data-tex="trecho-15"><code>scripts/cem.py</code> ajusta os parâmetros da softmax usando toda a elite. Aqui, a entrada equivale a um estado com atributo unitário e o gradiente é a média de dez visitas.</p>
+          <p data-tex="trecho-16"><a href="experimento.html">Examinar o experimento <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>→</mo></semantics></math></a></p>
+        </div>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

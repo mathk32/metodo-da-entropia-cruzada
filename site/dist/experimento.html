@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Compare os retornos do CEM com os da política uniforme. Cada ponto resume lotes coletados durante o treino, e as faixas mostram a variação entre sementes.">
+    <title>Resultados da coleta · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="comum.js"></script>
+    <script defer src="experimento.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main id="conteudo" class="wrap pagina-laboratorio">
+      <header class="hero">
+        <span class="eyebrow">PPGI071 · Aprendizado por reforço</span>
+        <h1>Quando a seleção ajuda?</h1>
+        <p data-tex="trecho-1">Compare os retornos do CEM com os da política uniforme. Cada ponto resume lotes coletados durante o treino, e as faixas mostram a variação entre sementes.</p>
+      </header>
+      <section class="reading" aria-label="Protocolo experimental"><div data-tex="protocolo">
+<section id="protocolo-de-coleta" class="level2 unnumbered">
+<h2 class="unnumbered">Protocolo de coleta</h2>
+<p>CartPole-v1 e FrozenLake-v1 em Gymnasium 1.1.1. Cada configuração usa 30 lotes de 16 episódios por semente, com sementes de 17 a 21. São oito passos de gradiente por lote com taxa principal <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,8</mn></mrow></semantics></math> e varredura adicional de 0,2 a 5 no carrinho. As curvas medem a política estocástica antes do ajuste. A referência uniforme mantém seus pesos fixos. A configuração <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>1</mn></mrow></semantics></math> continua aprendendo com o lote inteiro.</p>
+<p>No CartPole e no lago escorregadio com corte inclusivo foram medidas as frações <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>0,1</mn><mo>;</mo><mspace width="0.167em"></mspace><mn>0,3</mn><mo>;</mo><mspace width="0.167em"></mspace><mn>0,6</mn><mo>;</mo><mspace width="0.167em"></mspace><mn>1</mn><mo stretchy="false" form="postfix">}</mo></mrow></semantics></math>. No lago, o confronto entre superfícies e regras usa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>. A faixa de cada curva indica o mínimo e o máximo das cinco sementes naquele lote.</p>
+<p>Para reproduzir, execute <code>python scripts/experimento.py</code> na raiz do repositório com as dependências instaladas. <a href="resultados.csv">Baixar o CSV completo</a>.</p>
+</section>
+</div></section>
+<noscript><style>.lab{display:none}</style></noscript><section class="resultados"><div data-tex="resultados">
+<section id="resultados-da-coleta" class="level2 unnumbered">
+<h2 class="unnumbered">Resultados da coleta</h2>
+<p>No CartPole em Windows, a seleção de 10% dos episódios atingiu 408,73 passos em média nos cinco lotes finais, com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,8</mn></mrow></semantics></math>. Usando todo o lote, foram 22,04 passos. A política uniforme alcançou 22,59. Numa reprodução em Linux com Python 3.13, NumPy 2.2.6 e Gymnasium 1.1.1, a média com 10% foi 413,89. A ordem das frações permaneceu a mesma. No teste de taxa em Windows, com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,1</mn></mrow></semantics></math>, aumentar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math> de 2 para 5 reduziu a média final de 460,59 para 34,65 passos.</p>
+<p>No lago, a regra estrita com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math> alcançou 210 vitórias em 400 tentativas no piso firme e 15 em 400 no gelo. Ao ordenar por <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><msup><mi>γ</mi><mi>T</mi></msup></mrow></semantics></math> com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, foram 352 e 15, respectivamente. No gelo, o máximo de três vitórias por lote manteve o limiar em zero. Assim, qualquer vitória passou com ambos os descontos. A taxa de sucesso usa a recompensa original nas duas condições.</p>
+<p><a href="resumo.csv">Baixar o resumo por configuração</a>.</p>
+</section>
+</div><details><summary>Ver as duas figuras da coleta</summary><img src="comparacao.png" alt="Curvas de treino e faixas entre sementes nas duas tarefas"><img src="varredura-alpha.png" alt="Retorno final por taxa de aprendizagem nas duas frações de elite"></details></section>
+      <section class="lab" aria-labelledby="visual-titulo">
+        <div class="visual">
+          <h2 id="visual-titulo">Retorno médio por iteração</h2>
+          <p class="sub" id="status" role="status">Lendo os dados do experimento…</p>
+          <canvas class="plot" id="grafico" role="img" aria-label="Curvas e amplitudes entre sementes. Valores disponíveis na tabela por iteração."></canvas>
+          <div class="legend">
+            <span class="key"><i aria-hidden="true" class="swatch"></i>CEM</span><span class="key"><i aria-hidden="true" class="swatch orange"></i>Política uniforme</span><span>Faixas · mínimo a máximo</span>
+          </div>
+          <dl class="metrics" aria-live="polite">
+            <div>
+              <dt data-tex="trecho-3">CEM no último lote</dt>
+              <dd id="ultimo-cem">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-5">Política uniforme no último lote</dt>
+              <dd id="ultimo-aleat">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-7">Elite no último lote</dt>
+              <dd id="elite">—</dd>
+            </div>
+          </dl>
+          <details>
+            <summary>Ver tabela por iteração</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-tex="trecho-9">Lote</th>
+                    <th data-tex="trecho-10">CEM (média e faixa)</th>
+                    <th data-tex="trecho-11">Política uniforme (média e faixa)</th>
+                    <th data-tex="trecho-12">Elite efetiva</th>
+                  </tr>
+                </thead>
+                <tbody id="valores"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+        <aside class="controls" aria-label="Controles do laboratório">
+          <h2>Parâmetros</h2>
+          <div class="control">
+            <label for="ambiente" data-tex="trecho-13">Ambiente</label><select id="ambiente">
+              <option value="CartPole-v1">CartPole-v1</option>
+              <option value="FrozenLake-v1">FrozenLake-v1</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="fracao" data-tex="trecho-14">Fração de elite <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math></label><select id="fracao">
+              <option value="0.1">10% (percentil 90)</option>
+              <option value="0.3" selected>30% (percentil 70)</option>
+              <option value="0.6">60% (percentil 40)</option><option value="1">100% (percentil 0) · treino com todos</option>
+            </select>
+          </div>
+          <div class="control" id="controle-alpha"><label for="alpha">Taxa de aprendizagem (α)</label><select id="alpha"><option value="0.2">0,2</option><option value="0.8" selected>0,8</option><option value="2">2</option><option value="5">5</option></select></div><div class="control" id="controles-lago" hidden>
+            <label for="gamma">Desconto do escore (γ)</label><select id="gamma"><option value="1">1</option><option value="0.9">0,9</option></select><label for="superficie">Superfície</label><select id="superficie"><option value="gelo">Escorregadia</option><option value="firme">Determinística</option></select>
+            <label for="regra">Corte</label><select id="regra"><option value="inclusiva">Inclusivo (≥)</option><option value="estrita">Estrito (&gt;)</option></select>
+          </div>
+          <p class="help" data-tex="trecho-15">Para comparar os cortes no lago, usa-se a mesma fração nominal de 30%. A varredura da fração foi medida no gelo com corte inclusivo.</p>
+          <a href="resultados.csv" download>Baixar dados em CSV</a>
+        </aside>
+      </section>
+      <section class="reading">
+        <div>
+          <h2>Como interpretar as curvas</h2>
+          <p id="leitura"></p>
+          <p data-tex="trecho-17">A média de cada curva atribui o mesmo peso a cada semente. As faixas descrevem os extremos observados. A política uniforme fornece uma referência na mesma unidade e sob as mesmas regras de término.</p>
+        </div>
+        <div class="aside">
+          <strong data-tex="trecho-18">Correspondência com o código</strong>
+          <p data-tex="trecho-19"><code>scripts/cem.py</code> coleta episódios, aplica o filtro e ajusta os pesos. O programa <code>scripts/experimento.py</code> chama esse módulo para cada configuração e gera as figuras e os CSVs. Cada linha dos dados completos registra uma iteração, um ambiente, uma configuração e uma semente.</p>
+          <p data-tex="trecho-20"><a href="selecao.html">Voltar à seleção de elite <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>→</mo></semantics></math></a></p>
+        </div>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

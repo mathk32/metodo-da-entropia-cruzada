@@ -1,0 +1,44 @@
+%%% simbolo-fracao
+Fração de elite $\rho$ 
+
+%%% trecho-1
+Ajuste a fração de elite e observe quais trajetórias passam pelo corte. Comece pelos retornos de CartPole e depois faça a mesma seleção no gelo.
+
+%%% trecho-2
+Lote ilustrativo com doze episódios. A linha tracejada indica o limiar de seleção.
+
+%%% trecho-3
+Limiar de retorno
+
+%%% trecho-5
+Episódios de elite
+
+%%% trecho-7
+Fração efetiva
+
+%%% trecho-9
+Episódio
+
+%%% trecho-10
+Retorno $G_0$
+
+%%% trecho-11
+Seleção
+
+%%% trecho-12
+Ambiente
+
+%%% trecho-13
+O corte é o quantil $1-\rho$. Todo episódio com retorno igual ao corte também entra.
+
+%%% trecho-15
+\[E_k=\{i:G_0^{(i)}\geq c_k\},\qquad c_k=\operatorname{quantil}_{1-\rho}(G_0).\]
+
+%%% trecho-16
+Correspondência com o código
+
+%%% trecho-17
+\texttt{scripts/cem.py} calcula o limiar sobre os retornos totais e reúne os pares de estado e ação dos episódios selecionados.
+
+%%% trecho-18
+\href{politica.html}{Ajustar a política $\rightarrow$}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#183e36">
+    <title>CartPole · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script type="module" src="laboratorio.mjs"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main class="wrap" id="conteudo">
+      <header class="hero">
+        <p class="rotulo" data-tex="trecho-1"><a href="index.html">Experimentos</a> / Controle</p>
+        <h1>CartPole</h1>
+        <p data-tex="trecho-2">Por quanto tempo se mantém uma haste em pé quando só se pode empurrar a base para os lados?</p>
+      </header>
+      <section class="sec texto">
+        <h2>O problema</h2>
+        <p data-tex="trecho-3">Um carrinho sustenta uma haste articulada. A cada 0,02 s, aplica-se uma força à esquerda ou à direita. O agente observa posição, velocidade, ângulo e velocidade angular. Recebe um ponto por passo, inclusive no passo de queda. O episódio termina quando a haste passa de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>12</mn><mo>∘</mo></msup></semantics></math>, o carrinho ultrapassa 2,4 m a partir do centro ou se atinge o limite de tempo.</p>
+        <h3>Como o método procura uma solução</h3>
+        <p data-tex="trecho-4">Sorteiam-se empurrões pela política atual e guardam-se os episódios mais longos. As ações tomadas nesses episódios fornecem exemplos de como decidir quando a haste volta a uma posição parecida. Avance um lote de treino e compare o tempo médio de equilíbrio com o da política inicial, que escolhe os lados com a mesma probabilidade. Ao final da página, o código da simulação e dos experimentos em Python está disponível para download.</p>
+        <details>
+          <summary>Aprofundar a matemática</summary>
+          <div class="matematica" data-tex="aprofundamento">
+<section id="estado-observado" class="level2 unnumbered">
+<h2 class="unnumbered">Estado observado</h2>
+<p>A posição horizontal <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi></semantics></math> e a velocidade <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi></semantics></math> descrevem o carrinho. O ângulo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>φ</mi></semantics></math>, em radianos, e a velocidade angular <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ω</mi></semantics></math> descrevem a haste. O último atributo é o intercepto. <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϕ</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mi>x</mi><mrow><mn>2,4</mn></mrow></mfrac><mo>,</mo><mspace width="0.167em"></mspace><mi>v</mi><mo>,</mo><mspace width="0.167em"></mspace><mfrac><mi>φ</mi><mrow><mn>0,21</mn></mrow></mfrac><mo>,</mo><mspace width="0.167em"></mspace><mi>ω</mi><mo>,</mo><mspace width="0.167em"></mspace><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mi>⊤</mi></msup><mi>.</mi></mrow></semantics></math></p>
+</section>
+<section id="da-observação-ao-empurrão" class="level2 unnumbered">
+<h2 class="unnumbered">Da observação ao empurrão</h2>
+<p>A matriz de pesos tem cinco linhas e duas colunas. Cada coluna produz uma pontuação e a softmax fornece as probabilidades de esquerda e direita. <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><msup><mi>θ</mi><mi>⊤</mi></msup><mi>ϕ</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>h</mi><mi>a</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>h</mi><mi>E</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>h</mi><mi>D</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></mfrac><mi>.</mi></mrow></semantics></math> Por exemplo, se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>E</mi></msub><mo>=</mo><mn>0</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>D</mi></msub><mo>=</mo><mn>5</mn><mi>φ</mi></mrow></semantics></math>, inclinações de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,08</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>0,08</mn></mrow></semantics></math> rad dão chances de direita próximas de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,599</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,401</mn></mrow></semantics></math>. Para uma decisão D da elite no primeiro estado, a derivada em relação ao coeficiente angular é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>0,599</mn><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>×</mo><mn>0,08</mn><mo>≈</mo><mi>−</mi><mn>0,0321</mn></mrow></semantics></math>.</p>
+</section>
+<section id="retorno-e-duração" class="level2 unnumbered">
+<h2 class="unnumbered">Retorno e duração</h2>
+<p>Cada passo rende um ponto. Com desconto unitário, o retorno é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mn>0</mn></msub><mo>=</mo><mi>T</mi></mrow></semantics></math>. O livro usa o teto de 200 passos da versão v0. As medições em Python usam o teto de 500 da versão v1.</p>
+</section>
+<section id="seleção-e-ajuste" class="level2 unnumbered">
+<h2 class="unnumbered">Seleção e ajuste</h2>
+<p>Em um lote de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math> episódios, o percentil <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi></semantics></math> tem posição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>q</mi><mi>/</mi><mn>100</mn></mrow></semantics></math> na amostra ordenada, contando de zero. Interpolar os vizinhos de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi></semantics></math> fornece o limiar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi></semantics></math>.</p>
+<p>Cada par <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>s</mi><mi>j</mi></msub><mo>,</mo><msub><mi>a</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> dos episódios aceitos contribui para a perda média. Se houver <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>&gt;</mo><mn>0</mn></mrow></semantics></math> decisões, executam-se oito passos de gradiente com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,8</mn></mrow></semantics></math>. <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mfrac><mn>1</mn><mi>M</mi></mfrac><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>M</mi></munderover><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>a</mi><mi>j</mi></msub><mo>∣</mo><msub><mi>s</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math></p>
+</section>
+</div><div class="referencias fontes-lab" data-tex="fontes">
+<section id="referências" class="level2 unnumbered">
+<h2 class="unnumbered">Referências</h2>
+<p><a href="https://gymnasium.farama.org/environments/classic_control/cart_pole/">Farama Foundation. Especificação do CartPole.</a></p>
+<p>Maxim Lapan. <a href="https://www.packtpub.com/en-us/product/deep-reinforcement-learning-hands-on-9781838826994"><em>Deep Reinforcement Learning Hands-On</em></a>, 2ª ed. (2020), seção <em>The cross-entropy method on CartPole</em>. <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/01_cartpole.py">Código do exemplo CartPole</a>.</p>
+</section>
+</div></details>
+      </section>
+      <section class="sec" id="laboratorio" data-ambiente="cartpole">
+        <h2>Simulação</h2>
+        <p data-tex="trecho-5">O primeiro lote usa uma política uniforme. Reproduza um episódio ou avance passo a passo. Alterar a semente, o tamanho do lote ou a dinâmica inicia uma nova série. Alterar o filtro reclassifica o lote atual.</p>
+        <noscript>Ative o JavaScript para executar a simulação.</noscript>
+        <div class="labgrid">
+          <div>
+            <div class="palco">
+              <canvas id="tela" width="800" height="410" aria-label="Estado atual do CartPole, descrito logo abaixo" role="img"></canvas>
+              <div class="legenda">
+                <div class="acoes">
+                  <button id="reproduzir">Reproduzir</button><button class="secundario" id="passo">Avançar um passo</button><button class="secundario" id="voltar">Voltar ao início</button>
+                </div>
+                <label for="tempo">Passo da trajetória · <output id="instante"></output></label><input id="tempo" type="range" min="0" value="0" step="1">
+                <div class="leitura" id="estado"><section class="grupo-dados"><h4>Estado observado</h4><dl class="medidas"><div><dt data-tex="trecho-6">Posição</dt><dd data-valor="posicao">—</dd></div><div><dt data-tex="trecho-8">Velocidade</dt><dd data-valor="velocidade">—</dd></div><div><dt data-tex="trecho-10">Ângulo</dt><dd data-valor="angulo">—</dd></div><div><dt data-tex="trecho-12">Velocidade angular</dt><dd data-valor="angular">—</dd></div></dl></section><section class="grupo-dados"><h4>Última decisão</h4><dl class="medidas"><div><dt data-tex="trecho-14">Ação escolhida</dt><dd data-valor="acao">—</dd></div><div><dt data-tex="trecho-16">Probabilidade da ação</dt><dd data-valor="prob">—</dd></div></dl></section><section class="grupo-dados"><h4>Resultado</h4><dl class="medidas"><div><dt data-tex="trecho-18">Recompensa do passo</dt><dd data-valor="recompensa">—</dd></div><div><dt data-tex="trecho-20">Retorno acumulado</dt><dd data-valor="retorno">—</dd></div><div><dt data-tex="trecho-22">Situação</dt><dd data-valor="situacao">—</dd></div></dl></section></div>
+              </div>
+            </div>
+            <dl class="stats">
+              <div>
+                <dt data-tex="trecho-24">Retorno médio</dt>
+                <dd id="media"></dd>
+              </div>
+              <div>
+                <dt data-tex="trecho-26">Limiar do lote</dt>
+                <dd id="limiar"></dd>
+              </div>
+              <div>
+                <dt data-tex="trecho-28">Episódios de elite</dt>
+                <dd id="elite"></dd>
+              </div>
+            </dl>
+            <div class="nota" id="conta"><section class="grupo-dados"><h4>Seleção do episódio</h4><dl class="medidas"><div><dt data-tex="trecho-30">Episódio</dt><dd data-valor="ep">—</dd></div><div><dt data-tex="trecho-32">Cálculo do escore</dt><dd data-valor="calculo" data-tex="escore"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mn>0</mn></msub><mo>=</mo><mn data-numero="duracao">0</mn></mrow></semantics></math></dd></div><div><dt data-tex="trecho-34">Limiar</dt><dd data-valor="limiar">—</dd></div><div><dt data-tex="trecho-36">Posição do percentil</dt><dd data-valor="pospercentil">—</dd></div><div><dt data-tex="trecho-38">Critério</dt><dd data-valor="criterio">—</dd></div><div><dt data-tex="trecho-40">Seleção</dt><dd data-valor="decisao">—</dd></div></dl></section></div>
+          </div>
+          <aside class="painel">
+            <h3>Parâmetros</h3>
+            <label for="semente" data-tex="trecho-42">Semente inicial</label><input type="number" id="semente" min="0" max="999999" step="1" value="17"><label for="lote" data-tex="trecho-43">Episódios por lote</label><select id="lote">
+              <option selected>16</option>
+              <option>32</option>
+              <option>64</option>
+              <option>100</option>
+            </select>
+            <label for="horizonte" data-tex="trecho-44">Limite de passos</label><select id="horizonte">
+              <option>200</option>
+              <option selected>500</option>
+            </select>
+            <label for="percentil">Percentil · <output id="q"></output></label><input id="percentil" type="range" min="10" max="95" value="70" step="5"><label for="episodio" data-tex="trecho-45">Episódio em exibição</label><select id="episodio"></select>
+            <div class="acoes">
+              <button id="treinar">Avançar um lote</button><button class="secundario" id="reiniciar">Reiniciar treino</button>
+            </div>
+            <p id="rodada" role="status"></p>
+          </aside>
+        </div>
+        <details>
+          <summary>Inspecionar as contas de cada episódio</summary>
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th data-tex="trecho-47">Episódio</th>
+                  <th data-tex="trecho-48">Passos</th>
+                  <th data-tex="trecho-49">Retorno</th>
+                  <th data-tex="trecho-50">Escore do filtro</th>
+                  <th data-tex="trecho-51">Elite</th>
+                </tr>
+              </thead>
+              <tbody id="linhas"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+      <section class="sec">
+        <h2>O que foi medido em Python?</h2>
+        <p data-tex="trecho-52">Nos últimos cinco lotes das cinco sementes, o CEM com fração de elite nominal de 30% alcançou 273,37 passos em média, contra 22,59 da política uniforme. As médias finais por semente do CEM variaram de 174,95 a 349,14. O navegador usa seu próprio gerador pseudoaleatório. Os dados publicados foram obtidos em Windows. Numa reprodução em Linux com Python 3.13, NumPy 2.2.6 e Gymnasium 1.1.1, a mesma configuração atingiu 287,57 passos. A ordem das configurações foi preservada.</p>
+        <a href="experimento.html?ambiente=CartPole-v1">Consultar as curvas e os dados →</a>
+      </section>
+      <section class="sec">
+        <h2>Código do experimento</h2>
+        <p data-tex="trecho-53">O pacote inclui a simulação exibida nas duas páginas, a implementação em Python, as dependências e as instruções para reproduzir as medições.</p>
+        <a class="botao" href="downloads/experimentos.zip" download>Baixar código (.zip)</a>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

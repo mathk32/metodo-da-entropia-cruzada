@@ -1,0 +1,44 @@
+%%% logits
+$h_0=99109,\qquad h_1=99110$.
+
+%%% simbolo-alpha
+Taxa de passo $\alpha$ 
+
+%%% trecho-1
+Em um único estado, as ações da elite fornecem um alvo observável. Altere a contagem e acompanhe como cada passo de gradiente modifica a probabilidade de agir à direita.
+
+%%% trecho-2
+Em um lote de dez visitas de elite ao mesmo estado, a ação é esquerda (0) ou direita (1).
+
+%%% trecho-3
+Política atual $\pi(1\mid s)$
+
+%%% trecho-4
+Frequência da elite
+
+%%% trecho-5
+Perda média
+
+%%% trecho-7
+Última variação de $\pi$
+
+%%% trecho-9
+Passos de gradiente
+
+%%% trecho-11
+O lote permanece fixo entre passos. Reiniciar recupera os dois logits iguais a zero.
+
+%%% trecho-12
+Se a elite escolheu a direita oito vezes em dez visitas, sua frequência é 0,8. Com os dois logits inicialmente nulos, a política atribui 0,5 à direita. A derivada da perda em relação ao logit dessa ação vale $0{,}5-0{,}8$. Subtrair esse gradiente aumenta o logit da direita e reduz o da esquerda.
+
+%%% trecho-13
+\[h_a\gets h_a-\alpha\,[\pi(a\mid s)-f_a].\]
+
+%%% trecho-14
+Correspondência com o código
+
+%%% trecho-15
+\texttt{scripts/cem.py} ajusta os parâmetros da softmax usando toda a elite. Aqui, a entrada equivale a um estado com atributo unitário e o gradiente é a média de dez visitas.
+
+%%% trecho-16
+\href{experimento.html}{Examinar o experimento $\rightarrow$}

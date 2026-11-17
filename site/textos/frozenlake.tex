@@ -1,0 +1,141 @@
+%%% aprofundamento
+\subsection*{Estado e política}
+Cada casa $s$ seleciona uma linha da matriz $\theta\in\mathbb{R}^{16\times4}$. As quatro colunas correspondem às direções. A probabilidade da ação $a$ nessa casa é
+\[
+ \pi_\theta(a\mid s)=\frac{\exp(\theta_{s,a})}{\sum_{b=1}^{4}\exp(\theta_{s,b})}.
+\]
+
+\subsection*{Retorno e escore para seleção}
+Com uma recompensa $R_T$ apenas na transição final, o retorno inicial é $G_0=\gamma^{T-1}R_T$. Para ordenar episódios, o exemplo modificado de Lapan usa o escore
+\[
+ u=R_T\gamma^T.
+\]
+Duas vitórias em seis e dez passos, com $\gamma=0{,}9$, recebem cerca de $0{,}5314$ e $0{,}3487$. O simulador permite comparar o corte inclusivo $u\ge c$ com o estrito $u>c$ no mesmo lote.
+
+\subsection*{Seleção e ajuste}
+Em um lote de $N$ episódios, o percentil $q$ tem posição $h=(N-1)q/100$ na amostra ordenada, contando de zero. Interpolar os vizinhos de $h$ fornece o limiar $c$.
+
+Cada par $(s_j,a_j)$ dos episódios aceitos contribui para a perda média. Se houver $M>0$ decisões, executam-se oito passos de gradiente com $\alpha=0{,}8$.
+\[
+ L(\theta)=-\frac{1}{M}\sum_{j=1}^{M}\ln\pi_\theta(a_j\mid s_j).
+\]
+
+Se a elite estrita ficar vazia, mantém-se a política e coleta-se outro lote. O simulador usa a elite corrente. O exemplo 03 do livro também mantém sucessos anteriores.
+
+
+%%% fontes
+\subsection*{Referências}
+\noindent \href{https://gymnasium.farama.org/environments/toy_text/frozen_lake/}{Farama Foundation. Especificação do FrozenLake.}
+
+\noindent Maxim Lapan. \href{https://www.packtpub.com/en-us/product/deep-reinforcement-learning-hands-on-9781838826994}{\emph{Deep Reinforcement Learning Hands-On}}, 2ª ed. (2020), seção \emph{The cross-entropy method on FrozenLake}. \href{https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/03_frozenlake_tweaked.py}{Código do exemplo FrozenLake}.
+
+%%% escore
+$99101\times99102^{99103}=99104$
+
+%%% simbolo-desconto
+Desconto $\gamma$ · 
+
+%%% trecho-1
+\href{index.html}{Experimentos} / Navegação
+
+%%% trecho-2
+Qual decisão merece crédito quando até um movimento bem escolhido pode terminar em um buraco?
+
+%%% trecho-3
+Uma partida começa no canto superior esquerdo de um lago com dezesseis casas. Chegar à bandeira rende um ponto. Cair em um buraco ou esgotar cem movimentos rende zero. Com gelo escorregadio, a direção executada pode ser a escolhida ou uma das duas perpendiculares, com probabilidades iguais.
+
+%%% trecho-4
+A política mantém quatro probabilidades por casa. Depois de jogar um lote, selecionam-se trajetórias por escore e tornam-se mais prováveis as ações que ocorreram nelas. Experimente primeiro o corte inclusivo. Se o limiar for zero, mude para o corte estrito e verifique quantas tentativas ainda podem ensinar algo. Ao final da página, o código da simulação e dos experimentos em Python está disponível para download.
+
+%%% trecho-5
+O primeiro lote usa uma política uniforme. Reproduza um episódio ou avance passo a passo. Alterar a semente, o tamanho do lote ou a dinâmica inicia uma nova série. Alterar o filtro reclassifica o lote atual.
+
+%%% trecho-6
+Casa
+
+%%% trecho-8
+Linha
+
+%%% trecho-10
+Coluna
+
+%%% trecho-12
+Ação escolhida
+
+%%% trecho-14
+Direção executada
+
+%%% trecho-16
+Probabilidade da ação
+
+%%% trecho-18
+Recompensa do passo
+
+%%% trecho-20
+Retorno acumulado
+
+%%% trecho-22
+Situação
+
+%%% trecho-24
+Retorno médio
+
+%%% trecho-26
+Limiar do lote
+
+%%% trecho-28
+Episódios de elite
+
+%%% trecho-30
+Episódio
+
+%%% trecho-32
+Cálculo do escore
+
+%%% trecho-34
+Limiar
+
+%%% trecho-36
+Posição do percentil
+
+%%% trecho-38
+Critério
+
+%%% trecho-40
+Seleção
+
+%%% trecho-42
+Semente inicial
+
+%%% trecho-43
+Episódios por lote
+
+%%% trecho-44
+Superfície
+
+%%% trecho-45
+Regra do corte
+
+%%% trecho-46
+Episódio em exibição
+
+%%% trecho-48
+Episódio
+
+%%% trecho-49
+Passos
+
+%%% trecho-50
+Retorno
+
+%%% trecho-51
+Escore do filtro
+
+%%% trecho-52
+Elite
+
+%%% trecho-53
+O simulador começa com lotes de 100 episódios, como o exemplo modificado de Lapan; as medições em Python usam 16. Nos últimos cinco lotes das cinco sementes, o CEM básico chegou ao objetivo em quatro de 400 episódios (1,0\%). A política uniforme chegou seis vezes (1,5\%). A regra inclusiva conservou todos os episódios em todos os lotes para as quatro frações testadas. Com o mesmo orçamento e corte estrito, houve 15 chegadas no gelo (3,75\%) e 210 no piso determinístico (52,5\%) em 400 tentativas. Sem desconto, o percentil 70 chega a um com seis ou mais vitórias em dezesseis tentativas. Assim ocorreram 86 dos 109 lotes vazios no piso firme. Os outros 23 ficaram sem vitória. No gelo, os 92 lotes vazios ficaram sem vitória. Com escore $R\gamma^T$ e $\gamma=0{,}9$, foram 352 vitórias em 400 no piso firme e 15 em 400 no gelo. O navegador usa seu próprio gerador pseudoaleatório. As curvas arquivadas foram obtidas com NumPy e Gymnasium.
+
+%%% trecho-54
+O pacote inclui a simulação exibida nas duas páginas, a implementação em Python, as dependências e as instruções para reproduzir as medições.

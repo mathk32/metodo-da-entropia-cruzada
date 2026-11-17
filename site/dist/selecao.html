@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Ajuste a fração de elite e observe quais trajetórias passam pelo corte. Comece pelos retornos de CartPole e depois faça a mesma seleção no gelo.">
+    <title>Seleção da elite · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="comum.js"></script>
+    <script defer src="lote.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html" aria-current="page">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main id="conteudo" class="wrap pagina-laboratorio">
+      <header class="hero">
+        <span class="eyebrow">PPGI071 · Aprendizado por reforço</span>
+        <h1>Quais episódios entram na elite?</h1>
+        <p data-tex="trecho-1">Ajuste a fração de elite e observe quais trajetórias passam pelo corte. Comece pelos retornos de CartPole e depois faça a mesma seleção no gelo.</p>
+      </header>
+      <noscript>Ative o JavaScript para usar os controles do laboratório.</noscript>
+      <section class="lab" aria-labelledby="visual-titulo">
+        <div class="visual">
+          <h2 id="visual-titulo">Retorno por episódio</h2>
+          <p class="sub" data-tex="trecho-2">Lote ilustrativo com doze episódios. A linha tracejada indica o limiar de seleção.</p>
+          <canvas class="plot" id="grafico" role="img" aria-label="Gráfico dos retornos. Valores disponíveis na tabela do lote."></canvas>
+          <div class="legend">
+            <span class="key"><i aria-hidden="true" class="swatch"></i>Elite</span><span class="key"><i aria-hidden="true" class="swatch gray"></i>Abaixo do corte</span><span class="key"><i aria-hidden="true" class="swatch dashed"></i>Limiar</span>
+          </div>
+          <dl class="metrics" aria-live="polite">
+            <div>
+              <dt data-tex="trecho-3">Limiar de retorno</dt>
+              <dd id="corte">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-5">Episódios de elite</dt>
+              <dd id="tamanho">—</dd>
+            </div>
+            <div>
+              <dt data-tex="trecho-7">Fração efetiva</dt>
+              <dd id="real">—</dd>
+            </div>
+          </dl>
+          <details>
+            <summary>Ver tabela do lote</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-tex="trecho-9">Episódio</th>
+                    <th data-tex="trecho-10">Retorno <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mn>0</mn></msub></semantics></math></th>
+                    <th data-tex="trecho-11">Seleção</th>
+                  </tr>
+                </thead>
+                <tbody id="valores"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+        <aside class="controls" aria-label="Controles do laboratório">
+          <h2>Parâmetros</h2>
+          <div class="control">
+            <label for="ambiente" data-tex="trecho-12">Ambiente</label><select id="ambiente">
+              <option value="CartPole-v1">CartPole-v1</option>
+              <option value="FrozenLake-v1">FrozenLake-v1</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="fracao"><span data-tex="simbolo-fracao">Fração de elite <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math></span><output id="fracao-valor" for="fracao">30</output></label><input id="fracao" type="range" min="5" max="95" step="5" value="30">
+          </div>
+          <p class="help" data-tex="trecho-13">O corte é o quantil <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>ρ</mi></mrow></semantics></math>. Todo episódio com retorno igual ao corte também entra.</p>
+          <button type="button" id="outro" class="secondary">Trocar lote ilustrativo</button>
+        </aside>
+      </section>
+      <section class="reading">
+        <div>
+          <h2>O efeito dos empates</h2>
+          <p id="leitura" aria-live="polite"></p>
+          <p class="formula" data-tex="trecho-15"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>k</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">{</mo><mi>i</mi><mo>:</mo><msubsup><mi>G</mi><mn>0</mn><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><mo>≥</mo><msub><mi>c</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">}</mo><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>c</mi><mi>k</mi></msub><mo>=</mo><msub><mrow><mi mathvariant="normal">quantil</mi><mo>⁡</mo></mrow><mrow><mn>1</mn><mo>−</mo><mi>ρ</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>G</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math></p>
+        </div>
+        <div class="aside">
+          <strong data-tex="trecho-16">Correspondência com o código</strong>
+          <p data-tex="trecho-17"><code>scripts/cem.py</code> calcula o limiar sobre os retornos totais e reúne os pares de estado e ação dos episódios selecionados.</p>
+          <p data-tex="trecho-18"><a href="politica.html">Ajustar a política <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>→</mo></semantics></math></a></p>
+        </div>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

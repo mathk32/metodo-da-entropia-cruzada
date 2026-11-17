@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#183e36">
+    <title>FrozenLake · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script type="module" src="laboratorio.mjs"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main class="wrap" id="conteudo">
+      <header class="hero">
+        <p class="rotulo" data-tex="trecho-1"><a href="index.html">Experimentos</a> / Navegação</p>
+        <h1>FrozenLake</h1>
+        <p data-tex="trecho-2">Qual decisão merece crédito quando até um movimento bem escolhido pode terminar em um buraco?</p>
+      </header>
+      <section class="sec texto">
+        <h2>O problema</h2>
+        <p data-tex="trecho-3">Uma partida começa no canto superior esquerdo de um lago com dezesseis casas. Chegar à bandeira rende um ponto. Cair em um buraco ou esgotar cem movimentos rende zero. Com gelo escorregadio, a direção executada pode ser a escolhida ou uma das duas perpendiculares, com probabilidades iguais.</p>
+        <h3>Como o método procura uma solução</h3>
+        <p data-tex="trecho-4">A política mantém quatro probabilidades por casa. Depois de jogar um lote, selecionam-se trajetórias por escore e tornam-se mais prováveis as ações que ocorreram nelas. Experimente primeiro o corte inclusivo. Se o limiar for zero, mude para o corte estrito e verifique quantas tentativas ainda podem ensinar algo. Ao final da página, o código da simulação e dos experimentos em Python está disponível para download.</p>
+        <details>
+          <summary>Aprofundar a matemática</summary>
+          <div class="matematica" data-tex="aprofundamento">
+<section id="estado-e-política" class="level2 unnumbered">
+<h2 class="unnumbered">Estado e política</h2>
+<p>Cada casa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi></semantics></math> seleciona uma linha da matriz <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>∈</mo><msup><mi mathvariant="double-struck">ℝ</mi><mrow><mn>16</mn><mo>×</mo><mn>4</mn></mrow></msup></mrow></semantics></math>. As quatro colunas correspondem às direções. A probabilidade da ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math> nessa casa é <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>θ</mi><mrow><mi>s</mi><mo>,</mo><mi>a</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><munderover><mo>∑</mo><mrow><mi>b</mi><mo>=</mo><mn>1</mn></mrow><mn>4</mn></munderover><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>θ</mi><mrow><mi>s</mi><mo>,</mo><mi>b</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow></mfrac><mi>.</mi></mrow></semantics></math></p>
+</section>
+<section id="retorno-e-escore-para-seleção" class="level2 unnumbered">
+<h2 class="unnumbered">Retorno e escore para seleção</h2>
+<p>Com uma recompensa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>T</mi></msub></semantics></math> apenas na transição final, o retorno inicial é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mn>0</mn></msub><mo>=</mo><msup><mi>γ</mi><mrow><mi>T</mi><mo>−</mo><mn>1</mn></mrow></msup><msub><mi>R</mi><mi>T</mi></msub></mrow></semantics></math>. Para ordenar episódios, o exemplo modificado de Lapan usa o escore <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><msub><mi>R</mi><mi>T</mi></msub><msup><mi>γ</mi><mi>T</mi></msup><mi>.</mi></mrow></semantics></math> Duas vitórias em seis e dez passos, com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, recebem cerca de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,5314</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,3487</mn></mrow></semantics></math>. O simulador permite comparar o corte inclusivo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>≥</mo><mi>c</mi></mrow></semantics></math> com o estrito <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>&gt;</mo><mi>c</mi></mrow></semantics></math> no mesmo lote.</p>
+</section>
+<section id="seleção-e-ajuste" class="level2 unnumbered">
+<h2 class="unnumbered">Seleção e ajuste</h2>
+<p>Em um lote de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math> episódios, o percentil <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi></semantics></math> tem posição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>q</mi><mi>/</mi><mn>100</mn></mrow></semantics></math> na amostra ordenada, contando de zero. Interpolar os vizinhos de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi></semantics></math> fornece o limiar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi></semantics></math>.</p>
+<p>Cada par <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>s</mi><mi>j</mi></msub><mo>,</mo><msub><mi>a</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> dos episódios aceitos contribui para a perda média. Se houver <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>&gt;</mo><mn>0</mn></mrow></semantics></math> decisões, executam-se oito passos de gradiente com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,8</mn></mrow></semantics></math>. <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mfrac><mn>1</mn><mi>M</mi></mfrac><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>M</mi></munderover><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>a</mi><mi>j</mi></msub><mo>∣</mo><msub><mi>s</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math></p>
+<p>Se a elite estrita ficar vazia, mantém-se a política e coleta-se outro lote. O simulador usa a elite corrente. O exemplo 03 do livro também mantém sucessos anteriores.</p>
+</section>
+</div><div class="referencias fontes-lab" data-tex="fontes">
+<section id="referências" class="level2 unnumbered">
+<h2 class="unnumbered">Referências</h2>
+<p><a href="https://gymnasium.farama.org/environments/toy_text/frozen_lake/">Farama Foundation. Especificação do FrozenLake.</a></p>
+<p>Maxim Lapan. <a href="https://www.packtpub.com/en-us/product/deep-reinforcement-learning-hands-on-9781838826994"><em>Deep Reinforcement Learning Hands-On</em></a>, 2ª ed. (2020), seção <em>The cross-entropy method on FrozenLake</em>. <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/03_frozenlake_tweaked.py">Código do exemplo FrozenLake</a>.</p>
+</section>
+</div></details>
+      </section>
+      <section class="sec" id="laboratorio" data-ambiente="frozenlake">
+        <h2>Simulação</h2>
+        <p data-tex="trecho-5">O primeiro lote usa uma política uniforme. Reproduza um episódio ou avance passo a passo. Alterar a semente, o tamanho do lote ou a dinâmica inicia uma nova série. Alterar o filtro reclassifica o lote atual.</p>
+        <noscript>Ative o JavaScript para executar a simulação.</noscript>
+        <div class="labgrid">
+          <div>
+            <div class="palco">
+              <canvas id="tela" width="800" height="410" aria-label="Estado atual do FrozenLake, descrito logo abaixo" role="img"></canvas>
+              <div class="legenda">
+                <div class="acoes">
+                  <button id="reproduzir">Reproduzir</button><button class="secundario" id="passo">Avançar um passo</button><button class="secundario" id="voltar">Voltar ao início</button>
+                </div>
+                <label for="tempo">Passo da trajetória · <output id="instante"></output></label><input id="tempo" type="range" min="0" value="0" step="1">
+                <div class="leitura" id="estado"><section class="grupo-dados"><h4>Estado observado</h4><dl class="medidas"><div><dt data-tex="trecho-6">Casa</dt><dd data-valor="casa">—</dd></div><div><dt data-tex="trecho-8">Linha</dt><dd data-valor="linha">—</dd></div><div><dt data-tex="trecho-10">Coluna</dt><dd data-valor="coluna">—</dd></div></dl></section><section class="grupo-dados"><h4>Última decisão</h4><dl class="medidas"><div><dt data-tex="trecho-12">Ação escolhida</dt><dd data-valor="acao">—</dd></div><div><dt data-tex="trecho-14">Direção executada</dt><dd data-valor="efetiva">—</dd></div><div><dt data-tex="trecho-16">Probabilidade da ação</dt><dd data-valor="prob">—</dd></div></dl></section><section class="grupo-dados"><h4>Resultado</h4><dl class="medidas"><div><dt data-tex="trecho-18">Recompensa do passo</dt><dd data-valor="recompensa">—</dd></div><div><dt data-tex="trecho-20">Retorno acumulado</dt><dd data-valor="retorno">—</dd></div><div><dt data-tex="trecho-22">Situação</dt><dd data-valor="situacao">—</dd></div></dl></section></div>
+              </div>
+            </div>
+            <dl class="stats">
+              <div>
+                <dt data-tex="trecho-24">Retorno médio</dt>
+                <dd id="media"></dd>
+              </div>
+              <div>
+                <dt data-tex="trecho-26">Limiar do lote</dt>
+                <dd id="limiar"></dd>
+              </div>
+              <div>
+                <dt data-tex="trecho-28">Episódios de elite</dt>
+                <dd id="elite"></dd>
+              </div>
+            </dl>
+            <div class="nota" id="conta"><section class="grupo-dados"><h4>Seleção do episódio</h4><dl class="medidas"><div><dt data-tex="trecho-30">Episódio</dt><dd data-valor="ep">—</dd></div><div><dt data-tex="trecho-32">Cálculo do escore</dt><dd data-valor="calculo" data-tex="escore"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn data-numero="recompensa">0</mn><mo>×</mo><msup><mn data-numero="gamma">0</mn><mn data-numero="duracao">0</mn></msup><mo>=</mo><mn data-numero="escore">0</mn></mrow></semantics></math></dd></div><div><dt data-tex="trecho-34">Limiar</dt><dd data-valor="limiar">—</dd></div><div><dt data-tex="trecho-36">Posição do percentil</dt><dd data-valor="pospercentil">—</dd></div><div><dt data-tex="trecho-38">Critério</dt><dd data-valor="criterio">—</dd></div><div><dt data-tex="trecho-40">Seleção</dt><dd data-valor="decisao">—</dd></div></dl></section></div>
+          </div>
+          <aside class="painel">
+            <h3>Parâmetros</h3>
+            <label for="semente" data-tex="trecho-42">Semente inicial</label><input type="number" id="semente" min="0" max="999999" step="1" value="42"><label for="lote" data-tex="trecho-43">Episódios por lote</label><select id="lote">
+              <option>16</option>
+              <option>32</option>
+              <option>64</option>
+              <option selected>100</option>
+            </select>
+            <label for="gelo" data-tex="trecho-44">Superfície</label><select id="gelo">
+              <option value="sim">Gelo escorregadio</option>
+              <option value="nao">Movimento determinístico</option></select><label for="regra" data-tex="trecho-45">Regra do corte</label><select id="regra">
+              <option value="incl">Inclusiva (≥)</option>
+              <option value="estrito">Estrita (&gt;)</option></select><label for="desconto"><span data-tex="simbolo-desconto">Desconto <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi></semantics></math> ·</span><output id="gama"></output></label><input type="range" id="desconto" min="0.8" max="1" step=".01" value="1">
+            <label for="percentil">Percentil · <output id="q"></output></label><input id="percentil" type="range" min="10" max="95" value="70" step="5"><label for="episodio" data-tex="trecho-46">Episódio em exibição</label><select id="episodio"></select>
+            <div class="acoes">
+              <button id="treinar">Avançar um lote</button><button class="secundario" id="reiniciar">Reiniciar treino</button>
+            </div>
+            <p id="rodada" role="status"></p>
+          </aside>
+        </div>
+        <details>
+          <summary>Inspecionar as contas de cada episódio</summary>
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th data-tex="trecho-48">Episódio</th>
+                  <th data-tex="trecho-49">Passos</th>
+                  <th data-tex="trecho-50">Retorno</th>
+                  <th data-tex="trecho-51">Escore do filtro</th>
+                  <th data-tex="trecho-52">Elite</th>
+                </tr>
+              </thead>
+              <tbody id="linhas"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+      <section class="sec">
+        <h2>O que foi medido em Python?</h2>
+        <p data-tex="trecho-53">O simulador começa com lotes de 100 episódios, como o exemplo modificado de Lapan; as medições em Python usam 16. Nos últimos cinco lotes das cinco sementes, o CEM básico chegou ao objetivo em quatro de 400 episódios (1,0%). A política uniforme chegou seis vezes (1,5%). A regra inclusiva conservou todos os episódios em todos os lotes para as quatro frações testadas. Com o mesmo orçamento e corte estrito, houve 15 chegadas no gelo (3,75%) e 210 no piso determinístico (52,5%) em 400 tentativas. Sem desconto, o percentil 70 chega a um com seis ou mais vitórias em dezesseis tentativas. Assim ocorreram 86 dos 109 lotes vazios no piso firme. Os outros 23 ficaram sem vitória. No gelo, os 92 lotes vazios ficaram sem vitória. Com escore <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><msup><mi>γ</mi><mi>T</mi></msup></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, foram 352 vitórias em 400 no piso firme e 15 em 400 no gelo. O navegador usa seu próprio gerador pseudoaleatório. As curvas arquivadas foram obtidas com NumPy e Gymnasium.</p>
+        <a href="experimento.html?ambiente=FrozenLake-v1">Consultar as curvas e os dados →</a>
+      </section>
+      <section class="sec">
+        <h2>Código do experimento</h2>
+        <p data-tex="trecho-54">O pacote inclui a simulação exibida nas duas páginas, a implementação em Python, as dependências e as instruções para reproduzir as medições.</p>
+        <a class="botao" href="downloads/experimentos.zip" download>Baixar código (.zip)</a>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

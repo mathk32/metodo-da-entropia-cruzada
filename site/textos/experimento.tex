@@ -1,0 +1,60 @@
+%%% trecho-1
+Compare os retornos do CEM com os da política uniforme. Cada ponto resume lotes coletados durante o treino, e as faixas mostram a variação entre sementes.
+
+%%% trecho-3
+CEM no último lote
+
+%%% trecho-5
+Política uniforme no último lote
+
+%%% trecho-7
+Elite no último lote
+
+%%% trecho-9
+Lote
+
+%%% trecho-10
+CEM (média e faixa)
+
+%%% trecho-11
+Política uniforme (média e faixa)
+
+%%% trecho-12
+Elite efetiva
+
+%%% trecho-13
+Ambiente
+
+%%% trecho-14
+Fração de elite $\rho$
+
+%%% trecho-15
+Para comparar os cortes no lago, usa-se a mesma fração nominal de 30\%. A varredura da fração foi medida no gelo com corte inclusivo.
+
+%%% trecho-17
+A média de cada curva atribui o mesmo peso a cada semente. As faixas descrevem os extremos observados. A política uniforme fornece uma referência na mesma unidade e sob as mesmas regras de término.
+
+%%% trecho-18
+Correspondência com o código
+
+%%% trecho-19
+\texttt{scripts/cem.py} coleta episódios, aplica o filtro e ajusta os pesos. O programa \texttt{scripts/experimento.py} chama esse módulo para cada configuração e gera as figuras e os CSVs. Cada linha dos dados completos registra uma iteração, um ambiente, uma configuração e uma semente.
+
+%%% trecho-20
+\href{selecao.html}{Voltar à seleção de elite $\rightarrow$}
+
+%%% protocolo
+\subsection*{Protocolo de coleta}
+CartPole-v1 e FrozenLake-v1 em Gymnasium 1.1.1. Cada configuração usa 30 lotes de 16 episódios por semente, com sementes de 17 a 21. São oito passos de gradiente por lote com taxa principal $\alpha=0{,}8$ e varredura adicional de 0,2 a 5 no carrinho. As curvas medem a política estocástica antes do ajuste. A referência uniforme mantém seus pesos fixos. A configuração $\rho=1$ continua aprendendo com o lote inteiro.
+
+No CartPole e no lago escorregadio com corte inclusivo foram medidas as frações $\rho\in\{0{,}1;\,0{,}3;\,0{,}6;\,1\}$. No lago, o confronto entre superfícies e regras usa $\rho=0{,}3$. A faixa de cada curva indica o mínimo e o máximo das cinco sementes naquele lote.
+
+Para reproduzir, execute \texttt{python scripts/experimento.py} na raiz do repositório com as dependências instaladas. \href{resultados.csv}{Baixar o CSV completo}.
+
+%%% resultados
+\subsection*{Resultados da coleta}
+No CartPole em Windows, a seleção de 10\% dos episódios atingiu 408,73 passos em média nos cinco lotes finais, com $\alpha=0{,}8$. Usando todo o lote, foram 22,04 passos. A política uniforme alcançou 22,59. Numa reprodução em Linux com Python 3.13, NumPy 2.2.6 e Gymnasium 1.1.1, a média com 10\% foi 413,89. A ordem das frações permaneceu a mesma. No teste de taxa em Windows, com $\rho=0{,}1$, aumentar $\alpha$ de 2 para 5 reduziu a média final de 460,59 para 34,65 passos.
+
+No lago, a regra estrita com $\rho=0{,}3$ alcançou 210 vitórias em 400 tentativas no piso firme e 15 em 400 no gelo. Ao ordenar por $R\gamma^T$ com $\gamma=0{,}9$, foram 352 e 15, respectivamente. No gelo, o máximo de três vitórias por lote manteve o limiar em zero. Assim, qualquer vitória passou com ambos os descontos. A taxa de sucesso usa a recompensa original nas duas condições.
+
+\href{resumo.csv}{Baixar o resumo por configuração}.
