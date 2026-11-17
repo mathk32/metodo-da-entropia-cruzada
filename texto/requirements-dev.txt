@@ -1,0 +1,2 @@
+# Compilação web: o executável pandoc também deve estar no PATH.
+lxml==6.1.1
