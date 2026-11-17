@@ -1,0 +1,23 @@
+ambiente,superficie,metodo,regra,rho,gamma,alpha,passos,lote,sementes,lotes,inicial,media,minimo,maximo,sucessos,episodios_finais,vazios,vazios_sem_sucesso,vazios_com_sucesso,cortes_500,maior_elite_corte_500
+CartPole-v1,trilho,CEM,inclusiva,0.1,1.0,0.8,8,16,5,150,22.05,408.7325000000001,358.2125,429.4625,,400,0,0,0,61,0.875
+CartPole-v1,trilho,CEM,inclusiva,0.3,1.0,0.8,8,16,5,150,22.05,273.3675,174.95,349.1375,,400,0,0,0,8,0.625
+CartPole-v1,trilho,CEM,inclusiva,0.6,1.0,0.8,8,16,5,150,22.05,192.16749999999996,110.4375,297.5,,400,0,0,0,0,0
+CartPole-v1,trilho,CEM,inclusiva,1.0,1.0,0.8,8,16,5,150,22.05,22.035,12.9,45.7375,,400,0,0,0,0,0
+CartPole-v1,trilho,Política uniforme,inclusiva,1.0,1.0,0.8,8,16,5,150,22.05,22.585,21.175,24.45,,400,0,0,0,0,0
+FrozenLake-v1,gelo,CEM,inclusiva,0.1,1.0,0.8,8,16,5,150,0.0125,0.01,0.0,0.025,4,400,0,0,0,0,0
+FrozenLake-v1,gelo,CEM,inclusiva,0.3,1.0,0.8,8,16,5,150,0.0125,0.01,0.0,0.025,4,400,0,0,0,0,0
+FrozenLake-v1,gelo,CEM,inclusiva,0.6,1.0,0.8,8,16,5,150,0.0125,0.01,0.0,0.025,4,400,0,0,0,0,0
+FrozenLake-v1,gelo,CEM,inclusiva,1.0,1.0,0.8,8,16,5,150,0.0125,0.01,0.0,0.025,4,400,0,0,0,0,0
+FrozenLake-v1,gelo,Política uniforme,inclusiva,1.0,1.0,0.8,8,16,5,150,0.0125,0.015,0.0,0.0375,6,400,0,0,0,0,0
+FrozenLake-v1,gelo,CEM,estrita,0.3,1.0,0.8,8,16,5,150,0.0125,0.0375,0.025,0.0625,15,400,92,92,0,0,0
+FrozenLake-v1,gelo,CEM,estrita,0.3,0.9,0.8,8,16,5,150,0.0125,0.0375,0.025,0.0625,15,400,92,92,0,0,0
+FrozenLake-v1,firme,CEM,estrita,0.3,1.0,0.8,8,16,5,150,0.0,0.525,0.4375,0.5875,210,400,109,23,86,0,0
+FrozenLake-v1,firme,CEM,estrita,0.3,0.9,0.8,8,16,5,150,0.0,0.8799999999999999,0.85,0.9375,352,400,75,23,52,0,0
+FrozenLake-v1,firme,CEM,inclusiva,0.3,1.0,0.8,8,16,5,150,0.0,0.0075000000000000015,0.0,0.0125,3,400,0,0,0,0,0
+FrozenLake-v1,firme,Política uniforme,inclusiva,1.0,1.0,0.8,8,16,5,150,0.0,0.0075000000000000015,0.0,0.0125,3,400,0,0,0,0,0
+CartPole-v1,trilho,CEM,inclusiva,0.1,1.0,0.2,8,16,5,150,22.05,154.85999999999999,129.925,191.2375,,400,0,0,0,1,0.1875
+CartPole-v1,trilho,CEM,inclusiva,0.3,1.0,0.2,8,16,5,150,22.05,101.13250000000001,78.1125,111.8375,,400,0,0,0,0,0
+CartPole-v1,trilho,CEM,inclusiva,0.1,1.0,2.0,8,16,5,150,22.05,460.59,431.9875,480.35,,400,0,0,0,100,1.0
+CartPole-v1,trilho,CEM,inclusiva,0.3,1.0,2.0,8,16,5,150,22.05,407.73749999999995,299.0625,481.2375,,400,0,0,0,36,1.0
+CartPole-v1,trilho,CEM,inclusiva,0.1,1.0,5.0,8,16,5,150,22.05,34.647499999999994,9.225,135.75,,400,0,0,0,0,0
+CartPole-v1,trilho,CEM,inclusiva,0.3,1.0,5.0,8,16,5,150,22.05,11.415000000000001,9.275,12.7875,,400,0,0,0,0,0
