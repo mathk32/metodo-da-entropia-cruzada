@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#183e36">
+    <title>Experimentos · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="capa.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html" aria-current="page">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main class="wrap" id="conteudo">
+      <section class="hero capa">
+        <div>
+          <p class="rotulo" data-tex="trecho-1">Caderno de experimentos</p>
+          <h1>Método da entropia cruzada</h1>
+          <p class="intro" data-tex="trecho-2">O que se aprende ao repetir as decisões dos melhores episódios? No carrinho, a duração distingue as tentativas. No lago, quase todas recebem a mesma pontuação.</p>
+          <a class="acao" href="teoria.html">Acompanhar a derivação →</a>
+        </div>
+        <canvas id="capa" width="760" height="490" role="img" aria-label="Diagrama de uma haste sobre um carrinho e de seis posições sucessivas da haste."></canvas>
+      </section>
+      <section class="sec">
+        <h2>Trilha de leitura</h2><ol class="trilha"><li><a href="teoria.html">Teoria</a></li><li><a href="selecao.html">Seleção da elite</a></li><li><a href="politica.html">Ajuste da política</a></li><li><a href="cartpole.html">CartPole</a></li><li><a href="frozenlake.html">FrozenLake</a></li><li><a href="experimento.html">Resultados da coleta</a></li></ol></section><section class="sec"><h2>Experimentos</h2>
+        <div class="dupla">
+          <a class="cartao" href="cartpole.html"><span class="tag">Controle · recompensa densa</span>
+            <h3>CartPole</h3>
+            <p data-tex="trecho-3">Empurrar à direita ou à esquerda? Observe a haste, acompanhe as probabilidades e treine a política com os episódios mais longos.</p>
+            <span>Abrir experimento →</span></a><a class="cartao" href="frozenlake.html"><span class="tag">Navegação · recompensa esparsa</span>
+            <h3>FrozenLake</h3>
+            <p data-tex="trecho-4">Atravesse um lago onde o gelo desvia os movimentos. Compare os episódios aceitos quando o corte admite ou exclui empates.</p>
+            <span>Abrir experimento →</span></a>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Resultados em Python</h2>
+        <p data-tex="trecho-5">Os dois ambientes também foram avaliados em cinco sementes, com a política uniforme como referência. As curvas mostram a média de cada lote e a variação entre sementes.</p>
+        <a class="acao" href="experimento.html">Consultar as medições →</a>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

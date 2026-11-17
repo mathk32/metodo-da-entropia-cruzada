@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#183e36">
+    <title>Teoria · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="jogo.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html" aria-current="page">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html">Glossário</a></nav></div></header>
+<main class="wrap" id="conteudo">
+      <header class="hero">
+        <p class="rotulo" data-tex="trecho-1">Teoria</p>
+        <h1>Do retorno à política</h1>
+        <p data-tex="trecho-2">O método da entropia cruzada escolhe quais decisões serão usadas para aprender. Uma amostra de dez jogadas permite reconstruir o argumento inteiro.</p>
+        <a class="acao" href="teoria.pdf" download>Baixar a teoria em PDF →</a>
+      <nav class="trilha" aria-label="Explorar a teoria"><a href="selecao.html">Explorar o percentil</a><a href="politica.html">Testar o gradiente</a><a href="cartpole.html">Simular CartPole</a><a href="frozenlake.html">Simular FrozenLake</a></nav></header>
+      <article class="artigo"><section id="motivação" class="sec">
+<h2>Motivação</h2>
+<p>Em CartPole, empurrar o carrinho rende um ponto por passo até a queda da haste ou o limite de tempo. Dois empurrões de mesma recompensa imediata podem iniciar partidas de dez ou duzentos passos. Em FrozenLake, percorrer a grade só rende um ponto ao alcançar a meta. Essas recompensas seguem as especificações dos ambientes (Farama Foundation, 2025). Como aprender com a partida completa?</p>
+<p>O método da entropia cruzada (<em>Cross-Entropy Method</em>, CEM) repete decisões das melhores partidas. Cada observação guardada vira um exemplo de classificação, rotulado pela ação escolhida: <strong>o CEM transforma o retorno de partidas inteiras em rótulos, e só aprende quando o retorno separa as boas partidas das ruins</strong> (Lapan, 2020, <em>The cross-entropy method in practice</em> e <em>The cross-entropy method on FrozenLake</em>).</p>
+<p>O bandit da aula 02 guarda uma média por ação, mas no carrinho a utilidade de um empurrão depende da posição, do ângulo da haste e das velocidades. A avaliação pela equação de Bellman da aula 03 exige probabilidades de transição; aqui o agente dispõe de amostras de um ambiente com estados contínuos (Leite, 2026, aulas 02–03).</p>
+<p>Na notação da disciplina, o ciclo de Lapan (2020, <em>The cross-entropy method in practice</em>) se escreve assim. Os símbolos são definidos na próxima seção; aqui representam número de partidas, política, retorno, corte e fração guardada:</p>
+<ol>
+<li><p>Jogar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math> partidas com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mi>θ</mi></msub></semantics></math>, guardando os pares <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mi>t</mi></msub><mo>,</mo><msub><mi>A</mi><mi>t</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> e o retorno <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mn>0</mn></msub></semantics></math> de cada uma.</p></li>
+<li><p>Escolher o corte <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>k</mi></msub></semantics></math>, o percentil <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>100</mn><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> dos retornos.</p></li>
+<li><p>Manter as partidas com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mn>0</mn></msub><mo>≥</mo><msub><mi>c</mi><mi>k</mi></msub></mrow></semantics></math>.</p></li>
+<li><p>Ajustar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi></semantics></math> para aumentar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>A</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>S</mi><mi>t</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> nos pares mantidos e voltar ao início.</p></li>
+</ol>
+<div class="center">
+<p><img src="ciclo.png" style="width:92.0%" alt="Ciclo do CEM: coletar, ordenar, selecionar e ajustar"></p>
+</div>
+</section>
+<section id="onde-isto-se-encaixa" class="sec">
+<h2>Onde isto se encaixa</h2>
+<p>O agente observa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mi>t</mi></msub></semantics></math>, escolhe <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>A</mi><mi>t</mi></msub></semantics></math> e recebe <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> junto de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math>. Um episódio é uma tentativa completa. A trajetória <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi></semantics></math> registra seus estados, ações e recompensas. A política <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> dá a probabilidade da ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math> no estado <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi></semantics></math> (Leite, 2026, aulas 01–03 e glossário).</p>
+<p>O retorno soma as recompensas posteriores a uma decisão. O desconto <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi></semantics></math> determina quanto pesa cada passo de espera. Por exemplo, se uma partida rende <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mn>1</mn></msub><mo>=</mo><mn>0</mn></mrow></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mn>3</mn></msub><mo>=</mo><mn>1</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, o retorno a partir do início é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>+</mo><mn>0,9</mn><mo>⋅</mo><mn>0</mn><mo>+</mo><msup><mn>0,9</mn><mn>2</mn></msup><mo>⋅</mo><mn>1</mn><mo>=</mo><mn>0,81</mn></mrow></semantics></math>. O desempenho que interessa é a média dos retornos em novas partidas. Se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi></semantics></math> é o número de transições e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>θ</mi></msub></semantics></math> a distribuição das trajetórias sob a política, o objetivo episódico é <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mn>0</mn></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>T</mi><mo>−</mo><mn>1</mn></mrow></munderover><msup><mi>γ</mi><mi>t</mi></msup><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><mspace width="2.0em"></mspace><mi>J</mi><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi mathvariant="double-struck">𝔼</mi><mrow><mi>τ</mi><mo>∼</mo><msub><mi>P</mi><mi>θ</mi></msub></mrow></msub><mo stretchy="false" form="prefix">[</mo><msub><mi>G</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo><mi>.</mi></mrow></semantics></math> A esperança abrange o estado inicial, os sorteios da política e as respostas aleatórias do ambiente. A média dos retornos de um lote estima <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>J</mi></semantics></math> antes de qualquer seleção (Sutton e Barto, 2018, <em>Returns and Episodes</em>; <em>The Policy Gradient Theorem</em>).</p>
+<section id="da-média-de-uma-ação-à-política-condicionada-ao-estado" class="level3">
+<h3>Da média de uma ação à política condicionada ao estado</h3>
+<p>As duas regras abaixo mostram o que muda do bandit da aula 02 para o CEM. A primeira corrige a média da ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math> a cada recompensa. A segunda escolhe os parâmetros <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi></semantics></math> que tornam mais prováveis os pares estado–ação da elite <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="script">𝒟</mi><mi>k</mi></msub></semantics></math>, contando repetições. <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><msub><mi>Q</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><msub><mi>Q</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">[</mo><msub><mi>R</mi><mi>n</mi></msub><mo>−</mo><msub><mi>Q</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">]</mo><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><msub><mi>θ</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>≈</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo></mrow><munder><mi mathvariant="normal">max</mi><mi>θ</mi></munder><munder><mo>∑</mo><mrow><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo><mo>∈</mo><msub><mi mathvariant="script">𝒟</mi><mi>k</mi></msub></mrow></munder><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mtd></mtr></mtable></semantics></math> A aula 02 escreve <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>Q</mi><mi>k</mi></msub><mo>+</mo><mfrac><mn>1</mn><mi>k</mi></mfrac><mo stretchy="false" form="prefix">[</mo><msub><mi>R</mi><mi>k</mi></msub><mo>−</mo><msub><mi>Q</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow></semantics></math>. Aqui se usa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi></semantics></math> porque <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi></semantics></math> numera os lotes do CEM. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>n</mi></msub></semantics></math> é a <span class="sem-quebra"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi></semantics></math>-ésima</span> recompensa da ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math>, recebida como <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> no relógio do ambiente (Sutton e Barto, 2018, <em>Incremental Implementation</em>). Historicamente, porém, o CEM não veio dos bandits: surgiu na simulação de eventos raros (Rubinstein e Kroese, 2004, prefácio; de Boer et al., 2005, introdução).</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Aspecto</th>
+<th style="text-align: left;">Bandit da aula 02</th>
+<th style="text-align: left;">CEM episódico</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Representação</td>
+<td style="text-align: left;">Média <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> por ação</td>
+<td style="text-align: left;">Distribuição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> por estado</td>
+</tr>
+<tr>
+<td style="text-align: left;">Alvo</td>
+<td style="text-align: left;">Recompensa observada <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>n</mi></msub></semantics></math></td>
+<td style="text-align: left;">Ação observada num episódio aceito</td>
+</tr>
+<tr>
+<td style="text-align: left;">Unidade de dado</td>
+<td style="text-align: left;">Uma recompensa</td>
+<td style="text-align: left;">Trajetória filtrada pelo retorno</td>
+</tr>
+<tr>
+<td style="text-align: left;">Exploração</td>
+<td style="text-align: left;">Regra <span class="sem-quebra"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ε</mi></semantics></math>-gulosa</span> sobre as médias</td>
+<td style="text-align: left;">Sorteio da política estocástica</td>
+</tr>
+<tr>
+<td style="text-align: left;">Origem dos dados</td>
+<td style="text-align: left;">Política em vigor</td>
+<td style="text-align: left;">Política em vigor na versão básica</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<p>Lapan (2020, <em>The taxonomy of RL methods</em>) classifica o CEM como sem modelo (aprende com amostras), baseado em política (ajusta diretamente as escolhas) e <em>on-policy</em> (cada lote vem da política atual). Na terminologia de Sutton e Barto (2018, <em>Returns and Episodes</em>, <em>Policy Evaluation (Prediction)</em> e <em>Monte Carlo Control</em>), a tarefa é <em>episódica</em>, porque cada partida termina, e de <em>controle</em>, porque a política muda para obter mais retorno; na <em>predição</em>, ao contrário, apenas se avaliaria uma política fixa. Quanto à representação, o lago é <em>tabular</em>: cada casa tem sua própria linha de pesos. Como os estados do carrinho são contínuos, ele usa <em>aproximação de funções</em>: todos os estados compartilham os mesmos parâmetros (Sutton e Barto, 2018, <em>Policy Approximation and its Advantages</em>).</p>
+<p>O método supõe as hipóteses abaixo. Cada item diz o que acontece quando ela falha.</p>
+<ul>
+<li><p><strong>Estado de Markov.</strong> Se a observação omite algo relevante, uma política sem memória confunde situações que pedem decisões diferentes.</p></li>
+<li><p><strong>Estacionariedade.</strong> Se transições ou recompensas mudam, decisões que deram certo podem deixar de servir.</p></li>
+<li><p><strong>Fim observável.</strong> Sem fim de partida, não há retorno completo para ordenar.</p></li>
+<li><p><strong>Variação dos retornos.</strong> Se todos empatam, a regra inclusiva conserva todos e a estrita descarta todos.</p></li>
+<li><p><strong>Amostragem finita.</strong> A média pode cair no lote seguinte mesmo após um ajuste correto (Lapan, 2020, <em>The cross-entropy method on CartPole</em>).</p></li>
+</ul>
+</section>
+<section id="correspondência-dos-símbolos" class="level3">
+<h3>Correspondência dos símbolos</h3>
+<p>A tabela serve de consulta; os símbolos são definidos ao longo do texto.</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Fonte</th>
+<th style="text-align: left;">Nesta aula</th>
+<th style="text-align: left;">Leitura</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Lapan, ciclo do agente</td>
+<td style="text-align: left;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>o</mi><mi>i</mi></msub><mo>,</mo><msub><mi>a</mi><mi>i</mi></msub><mo>,</mo><msub><mi>r</mi><mi>i</mi></msub><mo>↔</mo><msub><mi>S</mi><mi>t</mi></msub><mo>,</mo><msub><mi>A</mi><mi>t</mi></msub><mo>,</mo><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow></semantics></math></td>
+<td style="text-align: left;">A recompensa chega após a ação do mesmo índice no livro</td>
+</tr>
+<tr>
+<td style="text-align: left;">Lapan, coleta</td>
+<td style="text-align: left;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mo>↔</mo><mi>τ</mi></mrow></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>↔</mo><msub><mi>G</mi><mn>0</mn></msub></mrow></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>↔</mo><mi>k</mi></mrow></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ψ</mi><mi>i</mi></msub><mo>↔</mo><msub><mi>c</mi><mi>k</mi></msub></mrow></semantics></math></td>
+<td style="text-align: left;">Episódio, retorno, iteração e corte</td>
+</tr>
+<tr>
+<td style="text-align: left;">Lapan, fundamentação</td>
+<td style="text-align: left;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>,</mo><mi>p</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>q</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math></td>
+<td style="text-align: left;">Candidato e distribuições. Na adaptação episódica usam-se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi><mo>,</mo><msub><mi>P</mi><mi>θ</mi></msub><mo>,</mo><mi>q</mi></mrow></semantics></math></td>
+</tr>
+<tr>
+<td style="text-align: left;">de Boer et al.</td>
+<td style="text-align: left;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>⋅</mi><mo>;</mo><mi>v</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>W</mi></mrow></semantics></math></td>
+<td style="text-align: left;">Escore <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mn>0</mn></msub></semantics></math>, família <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>θ</mi></msub></semantics></math> e razão <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mi>/</mi><mi>q</mi></mrow></semantics></math></td>
+</tr>
+<tr>
+<td style="text-align: left;">Sutton e Barto, política softmax</td>
+<td style="text-align: left;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo>,</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math></td>
+<td style="text-align: left;">Política parametrizada, com preferência <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo>,</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math></td>
+</tr>
+<tr>
+<td style="text-align: left;">Código</td>
+<td style="text-align: left;"><code>theta, alpha, rho</code></td>
+<td style="text-align: left;">Pesos <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi></semantics></math>, taxa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math>, fração <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math>. Na atualização suavizada de de Boer et al., <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math> suaviza parâmetros</td>
+</tr>
+<tr>
+<td style="text-align: left;">Código</td>
+<td style="text-align: left;"><code>G0, R_proximo, corte</code></td>
+<td style="text-align: left;">Retorno, recompensa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> e limiar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>k</mi></msub></semantics></math></td>
+</tr>
+<tr>
+<td style="text-align: left;">Código</td>
+<td style="text-align: left;"><code>elite, passos, lote</code></td>
+<td style="text-align: left;">Episódios aceitos <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></semantics></math>, passos <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>g</mi></msub></semantics></math> e episódios por lote <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math></td>
+</tr>
+</tbody>
+</table>
+</div></div>
+</section>
+</section>
+<section id="o-método" class="sec">
+<h2>O método</h2>
+<section id="a-ideia-e-um-jogo-de-um-passo" class="level3">
+<h3>A ideia e um jogo de um passo</h3>
+<p>No jogo de um passo, o estado é único, a ação é esquerda (E) ou direita (D) e a pontuação é aleatória. Cada coluna representa uma partida independente. Neste lote ilustrativo, D rende tanto zero quanto seis pontos.</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Episódio</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+<th style="text-align: center;">5</th>
+<th style="text-align: center;">6</th>
+<th style="text-align: center;">7</th>
+<th style="text-align: center;">8</th>
+<th style="text-align: center;">9</th>
+<th style="text-align: center;">10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Ação</td>
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">D</td>
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">D</td>
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">D</td>
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">D</td>
+<td style="text-align: center;">E</td>
+<td style="text-align: center;">D</td>
+</tr>
+<tr>
+<td style="text-align: left;">Retorno</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">6</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<p>Para guardar cerca de 30% das partidas (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>), usa-se o percentil 70, valor abaixo do qual ficam cerca de 70% dos retornos. Com os retornos em ordem crescente, ele ocupa a posição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,7</mn><mo stretchy="false" form="prefix">(</mo><mn>10</mn><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>6,3</mn></mrow></semantics></math>, contando de zero, isto é, entre o 7.º valor (3) e o 8.º (4). Interpolando, como faz <code>numpy.percentile</code> por padrão (NumPy, 2025), o corte vale <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>+</mo><mn>0,3</mn><mo>⋅</mo><mo stretchy="false" form="prefix">(</mo><mn>4</mn><mo>−</mo><mn>3</mn><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>3,3</mn></mrow></semantics></math>. Passam as partidas de retornos 4, 5 e 6, com ações D, E e D (Lapan, 2020, <em>The cross-entropy method on CartPole</em>, função <code>filter_batch</code>). <a href="selecao.html">Explorar o corte</a>.</p>
+<p>A verossimilhança é a probabilidade dos dados observados como função dos parâmetros. Com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>D</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>, reproduzir a elite D, E, D tem probabilidade <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>⋅</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mo>⋅</mo><mi>u</mi></mrow></semantics></math>. Logo, a verossimilhança é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Λ</mi><mo stretchy="false" form="prefix">(</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msup><mi>u</mi><mn>2</mn></msup><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>. O logaritmo preserva o ponto máximo e transforma o produto em soma. A derivada do logaritmo se anula em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>2</mn><mi>/</mi><mn>3</mn></mrow></semantics></math> e a segunda derivada é negativa: <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℓ</mi><mo stretchy="false" form="prefix">(</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>2</mn><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>u</mi><mo>+</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="2.0em"></mspace><msup><mi>ℓ</mi><mo>′</mo></msup><mo stretchy="false" form="prefix">(</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mfrac><mn>2</mn><mi>u</mi></mfrac><mo>−</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mi>u</mi></mrow></mfrac><mi>.</mi></mrow></semantics></math> O máximo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>2</mn><mi>/</mi><mn>3</mn></mrow></semantics></math> copia a frequência de D na elite. Trocar o sinal permite minimizar uma perda; dividir por três dá a perda por decisão. Agrupando ações pela frequência <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi></semantics></math> da elite, obtém-se a entropia cruzada <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo stretchy="false" form="prefix">(</mo><mi>f</mi><mo>,</mo><mi>π</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><munder><mo>∑</mo><mi>a</mi></munder><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mstyle displaystyle="false"><mfrac><mn>2</mn><mn>3</mn></mfrac></mstyle><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>u</mi><mo>−</mo><mstyle displaystyle="false"><mfrac><mn>1</mn><mn>3</mn></mfrac></mstyle><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math></p>
+<div id="jogo-interativo" class="painel">
+            <h3>Repetir D, E, D</h3>
+            <label for="chance">Probabilidade de direita · <output id="probabilidade"></output></label><input type="range" min="1" max="99" value="50" id="chance">
+            <p id="verossimilhanca" aria-live="polite" data-tex="conta-jogo"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Λ</mi><mo>=</mo><msup><mn data-numero="p">0</mn><mn>2</mn></msup><mo>×</mo><mn data-numero="complemento">0</mn><mo>=</mo><mn data-numero="verossimilhanca">0</mn><mo>,</mo><mspace width="2.0em"></mspace><mi>H</mi><mo>=</mo><mi>−</mi><mfrac><mn>1</mn><mn>3</mn></mfrac><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi mathvariant="normal">Λ</mi><mo>=</mo><mn data-numero="perda">0</mn><mi>.</mi></mrow></semantics></math></p>
+            <p data-tex="trecho-4">Compare <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>0,50</mn></mrow></semantics></math>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,67</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,90</mn></mrow></semantics></math>. Em qual dos três casos a perda por decisão é menor?</p>
+            <details class="resposta"><summary>Ver a resposta</summary><p data-tex="trecho-5">Em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>0,67</mn></mrow></semantics></math>, a perda por decisão vale cerca de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,637</mn></mrow></semantics></math>, contra <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,693</mn></mrow></semantics></math> em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>0,50</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,838</mn></mrow></semantics></math> em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>0,90</mn></mrow></semantics></math>. O mínimo exato está em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>2</mn><mi>/</mi><mn>3</mn></mrow></semantics></math>, a frequência de D na elite. Mova o controle para conferir.</p></details>
+          </div>
+          <p>A tabela permite verificar se imitar a elite maximiza o retorno estimado. D rende em média <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>13</mn><mi>/</mi><mn>5</mn><mo>=</mo><mn>2,6</mn></mrow></semantics></math> e E, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>11</mn><mi>/</mi><mn>5</mn><mo>=</mo><mn>2,2</mn></mrow></semantics></math>. Logo, o retorno estimado <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2,6</mn><mi>u</mi><mo>+</mo><mn>2,2</mn><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> cresce até <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>1</mn></mrow></semantics></math>, enquanto a imitação escolhe <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mn>2</mn><mi>/</mi><mn>3</mn></mrow></semantics></math>. Portanto, o CEM imita a elite; ele não escolhe a política de maior retorno estimado. Repetir a coleta e a seleção pode elevar os retornos e o corte; não há melhora garantida a cada lote.</p>
+</section>
+<section id="formalização-do-ajuste-da-política" class="level3">
+<h3>Formalização do ajuste da política</h3>
+<p>Seja <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></semantics></math> o conjunto de índices aceitos, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mi>i</mi></msub></semantics></math> a duração do episódio <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>=</mo><msub><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></mrow></msub><msub><mi>T</mi><mi>i</mi></msub></mrow></semantics></math> a quantidade de decisões aceitas. Generalizando a perda do jogo para todos os pares estado–ação aceitos, define-se, para <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>&gt;</mo><mn>0</mn></mrow></semantics></math>: <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mfrac><mn>1</mn><mi>M</mi></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></mrow></munder><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>0</mn></mrow><mrow><msub><mi>T</mi><mi>i</mi></msub><mo>−</mo><mn>1</mn></mrow></munderover><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>a</mi><mrow><mi>i</mi><mi>t</mi></mrow></msub><mo>∣</mo><msub><mi>s</mi><mrow><mi>i</mi><mi>t</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math> A perda mede quão improváveis são as ações aceitas sob a política atual.</p>
+<p>Uma tabela exata para estados contínuos precisaria de infinitas linhas. Uma função com pesos compartilhados responde também a observações novas. A rede do exemplo CartPole de Lapan (2020, <em>The cross-entropy method on CartPole</em>) usa 128 unidades ocultas com ativação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ReLU</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>. A saída atribui a cada ação uma preferência <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>b</mi></msub><mo>=</mo><mi>h</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo>,</mo><mi>b</mi><mo>,</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>. A softmax normaliza preferências exponenciadas. Escrevendo a perda do rótulo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math> como <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><msub><mi>h</mi><mi>a</mi></msub><mo>+</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mo>∑</mo><mi>j</mi></msub><msup><mi>e</mi><msub><mi>h</mi><mi>j</mi></msub></msup></mrow></semantics></math>, obtém-se: <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mfrac><msup><mi>e</mi><msub><mi>h</mi><mi>b</mi></msub></msup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><msub><mi>h</mi><mi>j</mi></msub></msup></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><mfrac><mrow><mi>∂</mi><mo stretchy="false" form="prefix">[</mo><mi>−</mi><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo></mrow><mrow><mi>∂</mi><msub><mi>h</mi><mi>b</mi></msub></mrow></mfrac><mo>=</mo><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn mathvariant="bold">𝟏</mn><mo stretchy="false" form="prefix">{</mo><mi>a</mi><mo>=</mo><mi>b</mi><mo stretchy="false" form="postfix">}</mo><mi>.</mi></mrow></semantics></math> No conjunto de decisões, o gradiente médio é probabilidade prevista menos frequência observada. Descer o gradiente aproxima essas distribuições. No mesmo jogo de um passo, considere agora uma elite de dez decisões: duas E e oito D, como na página Política. Com um parâmetro por ação e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,5</mn></mrow></semantics></math>, um passo de descida produz:</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Ação</th>
+<th style="text-align: center;">Logit inicial</th>
+<th style="text-align: center;">Prob. inicial</th>
+<th style="text-align: center;">Gradiente</th>
+<th style="text-align: center;">Novo logit</th>
+<th style="text-align: center;">Nova prob.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Esquerda</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0,5</td>
+<td style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>+</mi><mn>0,3</mn></mrow></semantics></math></td>
+<td style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>0,15</mn></mrow></semantics></math></td>
+<td style="text-align: center;">0,426</td>
+</tr>
+<tr>
+<td style="text-align: left;">Direita</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0,5</td>
+<td style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mn>0,3</mn></mrow></semantics></math></td>
+<td style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>+</mi><mn>0,15</mn></mrow></semantics></math></td>
+<td style="text-align: center;">0,574</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<p>Para os pesos de uma rede, aplica-se também a regra da cadeia. O livro usa Adam com taxa 0,01 e a <code>CrossEntropyLoss</code> do PyTorch, que combina log-softmax e perda logarítmica; a softmax explícita só serve para sortear ações (Lapan, 2020, <em>The cross-entropy method on CartPole</em>; Sutton e Barto, 2018, <em>Policy Approximation and its Advantages</em>; PyTorch, 2025). <a href="politica.html">Testar um passo de gradiente</a>.</p>
+</section>
+<section id="aprofundamento-opcional-da-amostragem-por-importância-à-perda" class="level3">
+<h3>Aprofundamento opcional: da amostragem por importância à perda</h3>
+<p>Esta parte opcional explica o nome do método: aproximar a distribuição das trajetórias boas.</p>
+<p><strong>1. Mudar a amostragem.</strong> A mesma esperança pode ser estimada com outra distribuição. Se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi></semantics></math> atribui probabilidade positiva onde <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mi>F</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> contribui para a média, a razão de densidades abaixo compensa a mudança de medida. Neste caso, a amostra é uma trajetória (de Boer et al., 2005, <em>A rare event simulation example</em>): <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="double-struck">𝔼</mi><mi>P</mi></msub><mo stretchy="false" form="prefix">[</mo><mi>F</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo><mo>=</mo><msub><mi mathvariant="double-struck">𝔼</mi><mi>q</mi></msub><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">[</mo><mfrac><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>q</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow></mfrac><mi>F</mi><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">]</mo></mrow><mi>.</mi></mrow></semantics></math> <strong>2. Aproximar a elite.</strong> Escolha <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>I</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn mathvariant="bold">𝟏</mn><mo stretchy="false" form="prefix">{</mo><msub><mi>G</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><msub><mi>c</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow></semantics></math>. Para limiar fixo e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Z</mi><mi>k</mi></msub><mo>=</mo><msub><mi mathvariant="double-struck">𝔼</mi><msub><mi>P</mi><msub><mi>θ</mi><mi>k</mi></msub></msub></msub><mo stretchy="false" form="prefix">[</mo><msub><mi>I</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">]</mo><mo>&gt;</mo><mn>0</mn></mrow></semantics></math>, a distribuição das trajetórias aceitas é <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo>=</mo><msub><mi>P</mi><msub><mi>θ</mi><mi>k</mi></msub></msub><msub><mi>I</mi><mi>k</mi></msub><mi>/</mi><msub><mi>Z</mi><mi>k</mi></msub></mrow></semantics></math>. A divergência de Kullback–Leibler mede quanto uma distribuição candidata se afasta dessa referência. Expandir o logaritmo da razão dá <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><mrow><mi mathvariant="normal">K</mi><mi mathvariant="normal">L</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">‖</mo><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi mathvariant="double-struck">𝔼</mi><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub></msub><mo stretchy="false" form="prefix">[</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">]</mo><mo>−</mo><msub><mi mathvariant="double-struck">𝔼</mi><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub></msub><mo stretchy="false" form="prefix">[</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="postfix">]</mo><mo>=</mo><mi>−</mi><mi>H</mi><mo stretchy="false" form="prefix">(</mo><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mi>H</mi><mo stretchy="false" form="prefix">(</mo><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo>,</mo><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow></semantics></math> O primeiro termo é o <em>negativo</em> da entropia da referência e fica constante durante o ajuste. O segundo é a entropia cruzada. Substituindo a distribuição condicionada, obtém-se <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo stretchy="false" form="prefix">(</mo><msub><mover><mi>P</mi><mo accent="true">̃</mo></mover><mi>k</mi></msub><mo>,</mo><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mfrac><mn>1</mn><msub><mi>Z</mi><mi>k</mi></msub></mfrac><msub><mi mathvariant="double-struck">𝔼</mi><msub><mi>P</mi><msub><mi>θ</mi><mi>k</mi></msub></msub></msub><mo stretchy="false" form="prefix">[</mo><msub><mi>I</mi><mi>k</mi></msub><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="postfix">]</mo><mi>.</mi></mrow></semantics></math> Como <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Z</mi><mi>k</mi></msub></semantics></math> não depende do parâmetro em ajuste, o fator positivo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><msub><mi>Z</mi><mi>k</mi></msub></mrow></semantics></math> não muda o minimizador.</p>
+<p><strong>3. Ajustar por verossimilhança.</strong> Para a formulação geral, Lapan (2020, <em>The theoretical background of the cross-entropy method</em>) indica um livro que atribui a Kroese (a obra é de Rubinstein e Kroese, 2004) e o verbete de Kroese (2011). O lote é amostrado da política corrente, de modo que <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mi>/</mi><mi>q</mi><mo>=</mo><mn>1</mn></mrow></semantics></math> para essa coleta. Restringir a soma às trajetórias aceitas dá a máxima verossimilhança da elite (de Boer et al., 2005, <em>The CE-method for combinatorial optimization</em>).</p>
+<p>Para <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi></semantics></math> passos, a regra do produto separa o estado inicial, as ações e as transições. Tomando logaritmos, obtém-se <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow></mrow></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>d</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>T</mi><mo>−</mo><mn>1</mn></mrow></munderover><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>a</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>s</mi><mi>t</mi></msub><mo stretchy="false" form="postfix">)</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mi>+</mi><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>T</mi><mo>−</mo><mn>1</mn></mrow></munderover><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>p</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>r</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>∣</mo><msub><mi>s</mi><mi>t</mi></msub><mo>,</mo><msub><mi>a</mi><mi>t</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mtd></mtr></mtable></semantics></math> Somente a parcela das ações depende de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi></semantics></math>. Substituir a esperança pela amostra e normalizar pelas <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi></semantics></math> decisões aceitas recupera a perda <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>L</mi><mi>k</mi></msub></semantics></math> da formalização. De Boer et al. (2005, <em>Markovian decision process</em>) estimam, entre as trajetórias de elite que visitam o estado <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>z</mi></semantics></math>, a fração que escolhe a ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi></semantics></math> nesse estado para o ajuste por máxima verossimilhança.</p>
+</section>
+<section id="divergências-entre-as-fontes" class="level3">
+<h3>Divergências entre as fontes</h3>
+<p>Na formulação de Lapan (2020, <em>The theoretical background of the cross-entropy method</em>), <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi></semantics></math> pode designar uma política candidata e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="double-struck">𝔼</mi><mi>p</mi></msub><mo stretchy="false" form="prefix">[</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>p</mi><mo stretchy="false" form="postfix">]</mo></mrow></semantics></math> recebe o nome de entropia. Pela convenção <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo stretchy="false" form="prefix">(</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><msub><mi mathvariant="double-struck">𝔼</mi><mi>p</mi></msub><mo stretchy="false" form="prefix">[</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>p</mi><mo stretchy="false" form="postfix">]</mo></mrow></semantics></math>, esse termo equivale a <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mi>H</mi><mo stretchy="false" form="prefix">(</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>. Para de Boer et al. (2005, <em>The CE method for rare event simulation</em>), <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi></semantics></math> é uma amostra genérica. Aqui, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi></semantics></math> é a trajetória <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi></semantics></math>.</p>
+<p>De Boer et al. (2005, <em>A rare event simulation example</em> e <em>The CE method for rare event simulation</em>) tomam como limiar a estatística de ordem <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mo stretchy="false" form="prefix">(</mo><mo stretchy="false" form="prefix">⌈</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo stretchy="false" form="postfix">)</mo><mi>N</mi><mo stretchy="false" form="postfix">⌉</mo><mo stretchy="false" form="postfix">)</mo></mrow></msub></semantics></math>, isto é, o valor observado na posição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">⌈</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo stretchy="false" form="postfix">)</mo><mi>N</mi><mo stretchy="false" form="postfix">⌉</mo></mrow></semantics></math> da amostra ordenada, sem interpolar. O teto <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">⌈</mo><mi>x</mi><mo stretchy="false" form="postfix">⌉</mo></mrow></semantics></math> arredonda <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi></semantics></math> para cima. Kroese (2011) usa outra convenção: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>e</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">⌈</mo><mi>ρ</mi><mi>N</mi><mo stretchy="false" form="postfix">⌉</mo></mrow></semantics></math> e limiar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>N</mi><mo>−</mo><msub><mi>N</mi><mi>e</mi></msub><mo>+</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub></semantics></math>. Quando <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mi>N</mi></mrow></semantics></math> é inteiro, o limiar de Kroese fica uma posição acima; nos demais casos, os dois coincidem. Em ambos, empates no limiar podem ampliar a elite. De Boer et al. indicam frações tipicamente entre 0,01 e 0,1 (<em>A rare event simulation example</em>) e, na discussão sobre a escolha de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math> (<em>The CE-method for combinatorial optimization</em>), <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>≈</mo><mn>0,01</mn></mrow></semantics></math> para problemas de dimensão <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>≥</mo><mn>100</mn></mrow></semantics></math> ou <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>≈</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>n</mi></mrow></semantics></math> para <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>&lt;</mo><mn>100</mn></mrow></semantics></math>; aqui, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi></semantics></math> é o tamanho do problema e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math>, o do lote. No CartPole, Lapan (2020, <em>The cross-entropy method on CartPole</em>) chama <code>numpy.percentile</code>, cuja interpolação padrão é linear (NumPy, 2025), e usa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>, uma fração bem maior.</p>
+<p>Na descrição do ciclo, Lapan (2020, <em>The cross-entropy method in practice</em>) descarta apenas os episódios abaixo do limiar; os empates ficam. Em <em>The cross-entropy method on CartPole</em>, o texto fala em retorno superior ao limiar, mas a função <code>filter_batch</code> de <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/01_cartpole.py"><code>01_cartpole.py</code></a> também aceita empates. Só o lago modificado, em <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/blob/master/Chapter04/03_frozenlake_tweaked.py"><code>03_frozenlake_tweaked.py</code></a>, exige escore estritamente superior. A <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Third-Edition/tree/main/Chapter04">implementação da terceira edição</a> conserva as duas regras (Lapan, 2024, <em>The cross-entropy method on CartPole</em> e <em>The cross-entropy method on FrozenLake</em>).</p>
+</section>
+</section>
+<section id="pseudocódigo" class="sec">
+<h2>Pseudocódigo</h2>
+<p>As regras de corte seguem as funções <code>filter_batch</code> dos exemplos CartPole (inclusiva) e FrozenLake modificado (estrita) de Lapan (2020, <em>The cross-entropy method on CartPole</em> e <em>The cross-entropy method on FrozenLake</em>). Cada linha de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi></semantics></math> contém os atributos do estado, e a linha correspondente de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi></semantics></math> indica a ação realizada.</p>
+<blockquote>
+<p><strong>CEM episódico com política softmax linear</strong></p>
+<p><strong>Parâmetros.</strong> Fração <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>∈</mo><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow></semantics></math>, taxa <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>&gt;</mo><mn>0</mn></mrow></semantics></math>, episódios por lote <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math>, passos de gradiente <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>g</mi></msub></semantics></math> e orçamento de lotes.</p>
+<p><strong>Inicialize</strong> <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>←</mo><mn>0</mn></mrow></semantics></math> (política uniforme).</p>
+<p><strong>Repita para cada lote <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi></semantics></math>:</strong></p>
+<p class="recuo-1">Para <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>N</mi></mrow></semantics></math>, gere uma trajetória sob <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>π</mi><mi>θ</mi></msub></semantics></math> e calcule <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>i</mi></msub><mo>=</mo><msubsup><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>0</mn></mrow><mrow><msub><mi>T</mi><mi>i</mi></msub><mo>−</mo><mn>1</mn></mrow></msubsup><msubsup><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup></mrow></semantics></math>.</p>
+<p class="recuo-1">Use <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>G</mi><mo accent="true">̃</mo></mover><mi>i</mi></msub><mo>=</mo><msub><mi>G</mi><mi>i</mi></msub></mrow></semantics></math> como escore (no lago com desconto, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>G</mi><mo accent="true">̃</mo></mover><mi>i</mi></msub><mo>=</mo><msub><mi>G</mi><mi>i</mi></msub><msup><mi>γ</mi><msub><mi>T</mi><mi>i</mi></msub></msup></mrow></semantics></math>).</p>
+<p class="recuo-1">Calcule <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>k</mi></msub></semantics></math>, o quantil linear de ordem <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>ρ</mi></mrow></semantics></math> dos <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math> escores.</p>
+<p class="recuo-1">Selecione <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">{</mo><mi>i</mi><mo>:</mo><msub><mover><mi>G</mi><mo accent="true">̃</mo></mover><mi>i</mi></msub><mo>≥</mo><msub><mi>c</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow></semantics></math> (regra estrita: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>G</mi><mo accent="true">̃</mo></mover><mi>i</mi></msub><mo>&gt;</mo><msub><mi>c</mi><mi>k</mi></msub></mrow></semantics></math>).</p>
+<p class="recuo-1">Se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></semantics></math> estiver vazio, passe ao próximo lote.</p>
+<p class="recuo-1">Empilhe em <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>,</mo><mi>Y</mi></mrow></semantics></math> as <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>=</mo><msub><mo>∑</mo><mrow><mi>i</mi><mo>∈</mo><msub><mi mathvariant="script">ℰ</mi><mi>k</mi></msub></mrow></msub><msub><mi>T</mi><mi>i</mi></msub></mrow></semantics></math> decisões aceitas.</p>
+<p class="recuo-1">Repita <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>g</mi></msub></semantics></math> vezes, com softmax por linha:</p>
+<p class="recuo-2"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo>←</mo><mrow><mi mathvariant="normal">softmax</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>.</p>
+<p class="recuo-2"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>←</mo><mi>θ</mi><mo>−</mo><mi>α</mi><msup><mi>X</mi><mi>⊤</mi></msup><mo stretchy="false" form="prefix">(</mo><mi>P</mi><mo>−</mo><mi>Y</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>M</mi></mrow></semantics></math>.</p>
+</blockquote>
+</section>
+<section id="implementação" class="sec">
+<h2>Implementação</h2>
+<p>Em <code>scripts/cem.py</code>, cada função corresponde a um trecho do pseudocódigo: <code>coletar</code> gera as trajetórias, <code>selecionar</code> calcula o corte e escolhe a elite, e <code>ajustar</code> dá os <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>g</mi></msub></semantics></math> passos de gradiente. Um episódio acaba por <em>término</em> (queda, buraco ou meta) ou por <em>truncamento</em> (limite de passos). A softmax subtrai o maior logit antes de exponenciar para evitar estouro numérico. A estrutura <code>Episodio</code> guarda atributos, ações e retorno <code>G0</code>. Oito passos aproximam o ajuste de máxima verossimilhança, sem buscar imitação completa da amostra; essa escolha é empírica. Aumentar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi></semantics></math> tende a estabilizar o corte, mas custa mais episódios por atualização.</p>
+<p>No carrinho, os atributos são posição dividida por 2,4, velocidade, ângulo dividido por 0,21, velocidade angular e uma constante 1 (intercepto). As divisões deixam as grandezas em escalas parecidas, de modo que um único passo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math> sirva para todas. No lago, um vetor indicador (<em>one-hot</em>) seleciona a linha de pesos da casa visitada.</p>
+<p>A política linear deixa o gradiente visível em NumPy. O exemplo do livro e a configuração principal usam 16 episódios e percentil 70 (Lapan, 2020, <em>The cross-entropy method on CartPole</em>). A coleta usa Gymnasium (Towers et al., 2024).</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Escolha</th>
+<th style="text-align: left;">Lapan (2020, <em>The cross-entropy method on CartPole</em>)</th>
+<th style="text-align: left;">Implementação deste material</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Política</td>
+<td style="text-align: left;">Rede com 128 unidades ReLU</td>
+<td style="text-align: left;">Softmax linear com atributos escalados</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ajuste por lote</td>
+<td style="text-align: left;">PyTorch, um passo Adam a 0,01</td>
+<td style="text-align: left;">NumPy, oito passos a <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>0,8</mn></mrow></semantics></math></td>
+</tr>
+<tr>
+<td style="text-align: left;">Parada</td>
+<td style="text-align: left;">Retorno médio superior a 199</td>
+<td style="text-align: left;">Orçamento de 30 lotes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ambiente</td>
+<td style="text-align: left;">Gym, CartPole-v0, até 200 passos</td>
+<td style="text-align: left;">Gymnasium 1.1.1, CartPole-v1, até 500 passos</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+</section>
+<section id="experimento-o-que-muda-quando-se-retira-a-seleção" class="sec">
+<h2>Experimento: o que muda quando se retira a seleção?</h2>
+<section id="previsão" class="level3">
+<h3>Previsão</h3>
+<p>O resíduo de uma decisão é a probabilidade prevista menos o rótulo: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn mathvariant="bold">𝟏</mn><mo stretchy="false" form="prefix">{</mo><mi>A</mi><mo>=</mo><mi>b</mi><mo stretchy="false" form="postfix">}</mo></mrow></semantics></math>, o gradiente da perda no logit da ação <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi></semantics></math>. Sem seleção, toda decisão vira rótulo e, sob a política que a gerou, a esperança condicional vale <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="double-struck">𝔼</mi><mrow><mi>A</mi><mo>∼</mo><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>⋅</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo stretchy="false" form="prefix">[</mo><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn mathvariant="bold">𝟏</mn><mo stretchy="false" form="prefix">{</mo><mi>A</mi><mo>=</mo><mi>b</mi><mo stretchy="false" form="postfix">}</mo><mo stretchy="false" form="postfix">]</mo><mo>=</mo><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mrow><mi mathvariant="normal">Pr</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>A</mi><mo>=</mo><mi>b</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0</mn><mi>.</mi></mrow></semantics></math> Assim, imitar as próprias decisões não fornece uma direção esperada de ajuste naquele estado. Por isso, treinar com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>1</mn></mrow></semantics></math> deve dar desempenho próximo ao da política uniforme. A previsão vale também para o lago com regra inclusiva quando o corte é zero, porque então a elite é o lote inteiro. A conta vale decisão a decisão. No lote, a divisão pelo número aleatório de decisões <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi></semantics></math> e os passos repetidos sobre os mesmos dados podem produzir desvios, que aparecem como deriva entre sementes.</p>
+</section>
+<section id="protocolo-e-resultados" class="level3">
+<h3>Protocolo e resultados</h3>
+<p>Comparam-se: (1) no CartPole, retirar a seleção e variar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math>; (2) no lago, os cortes inclusivo e estrito, o deslizamento e o desconto; (3) no CartPole, variar <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math>. Em <code>scripts/experimento.py</code>, cada configuração usa 30 lotes de 16 episódios, totalizando 480 episódios por semente (17 a 21). Mede-se o retorno antes do ajuste. Resumem-se os cinco lotes finais por semente e, entre sementes, a média e os extremos. A política uniforme, sem treino, é a linha de base. <a href="experimento.html">Curvas, tabelas e dados</a>.</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">CartPole</th>
+<th style="text-align: right;">Passos em média</th>
+<th style="text-align: right;">Faixa entre sementes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Política uniforme</td>
+<td style="text-align: right;">22,59</td>
+<td style="text-align: right;">21,18–24,45</td>
+</tr>
+<tr>
+<td style="text-align: left;">Treino com todos (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>1</mn></mrow></semantics></math>)</td>
+<td style="text-align: right;">22,04</td>
+<td style="text-align: right;">12,90–45,74</td>
+</tr>
+<tr>
+<td style="text-align: left;">CEM (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,6</mn></mrow></semantics></math>)</td>
+<td style="text-align: right;">192,17</td>
+<td style="text-align: right;">110,44–297,50</td>
+</tr>
+<tr>
+<td style="text-align: left;">CEM (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>)</td>
+<td style="text-align: right;">273,37</td>
+<td style="text-align: right;">174,95–349,14</td>
+</tr>
+<tr>
+<td style="text-align: left;">CEM (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,1</mn></mrow></semantics></math>)</td>
+<td style="text-align: right;">408,73</td>
+<td style="text-align: right;">358,21–429,46</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<p>Os valores foram obtidos em Windows; a reprodução em Linux está no <code>scripts/README.md</code>. Como previsto, treinar com todos os episódios manteve a média perto da política uniforme, e a seleção multiplicou a duração das partidas. Perto do fim, porém, muitas atingem o teto de 500 passos: o corte chegou a 500 em 61 de 150 lotes, e os empates deixaram passar até 14 episódios, sem distinguir as melhores.</p>
+<p>No lago, comparam-se as regras a <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>, sem desconto. Cada célula conta sucessos nos 400 episódios finais de uma configuração.</p>
+<div class="center">
+<div class="scroll"><table>
+<thead>
+<tr>
+<th style="text-align: left;">FrozenLake</th>
+<th style="text-align: right;">Gelo escorregadio</th>
+<th style="text-align: right;">Piso determinístico</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Política uniforme</td>
+<td style="text-align: right;">6/400 (1,50%)</td>
+<td style="text-align: right;">3/400 (0,75%)</td>
+</tr>
+<tr>
+<td style="text-align: left;">CEM inclusivo</td>
+<td style="text-align: right;">4/400 (1,00%)</td>
+<td style="text-align: right;">3/400 (0,75%)</td>
+</tr>
+<tr>
+<td style="text-align: left;">CEM estrito</td>
+<td style="text-align: right;">15/400 (3,75%)</td>
+<td style="text-align: right;">210/400 (52,50%)</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<p>Num lote típico do gelo, com quinze derrotas e uma vitória, o percentil 70 vale zero: a regra inclusiva deixa passar as dezesseis partidas, nesse corte, e repete a situação de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>1</mn></mrow></semantics></math>; a estrita imita só a vitória.</p>
+<p>A regra estrita tem, porém, um ponto cego. Com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>16</mn></mrow></semantics></math>, o percentil 70 fica na posição <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,7</mn><mo stretchy="false" form="prefix">(</mo><mn>16</mn><mo>−</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>10,5</mn></mrow></semantics></math>: vale zero com até quatro vitórias, 0,5 com cinco e um com seis ou mais. Neste último caso nenhuma vitória supera o corte, e o lote não ensina nada. Isso explica 86 dos 109 lotes vazios no piso firme; os outros 23, e os 92 do gelo, não tiveram vitória. Esse bloqueio ajuda a explicar os 52,5% observados; o valor não é um teto matemático do método nem da regra.</p>
+<p>Com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, o escore <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><msup><mi>γ</mi><mi>T</mi></msup></mrow></semantics></math> desempata as vitórias pela duração: no piso firme, elas passaram de 210 para 352 em 400, e os lotes vazios caíram de 109 para 75. No gelo nada mudou: nenhum lote teve mais de três vitórias, o corte ficou em zero e toda vitória passou com ou sem desconto.</p>
+<figure data-latex-placement="H" class="larga">
+<a href="comparacao.png"><img src="comparacao.png" alt="Curvas de treino do CartPole e do FrozenLake por configuração">
+</a><figcaption>À esquerda, médias e extremos por lote no CartPole e médias finais de cada semente, com a média entre sementes marcada por um traço. À direita, médias por lote e faixas mínimo–máximo no FrozenLake, com e sem deslizamento. No gelo, as curvas estritas com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi></semantics></math> igual a 1 e 0,9 coincidem. <a href="comparacao.png">Abrir a figura em tamanho real.</a></figcaption>
+</figure>
+<p>No CartPole, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,1</mn></mrow></semantics></math> atingiu 460,59 passos com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>2</mn></mrow></semantics></math> e caiu para 34,65 com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>5</mn></mrow></semantics></math>. Aumentar a taxa além do melhor valor testado piorou as duas curvas; com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mn>5</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>, a média ficou abaixo da política uniforme (11,42 contra 22,59). Passos grandes podem concentrar cedo demais a política em escolhas ruins. <a href="resumo.csv">Resultados por configuração</a>.</p>
+<figure data-latex-placement="H">
+<img src="varredura-alpha.png" style="width:80.0%" alt="Retorno final do CartPole por taxa de aprendizagem, com a política uniforme como referência">
+<figcaption>CartPole: retorno médio nos cinco lotes finais por taxa de aprendizagem. A faixa delimita os extremos entre sementes, e a linha tracejada marca a política uniforme.</figcaption>
+</figure>
+</section>
+<section id="o-que-o-experimento-mostra" class="level3">
+<h3>O que o experimento mostra</h3>
+<p>Selecionar a elite melhorou o carrinho; aceitar todos preservou o desempenho da política uniforme. No lago, empates podem anular a seleção, e o desconto só ajuda quando altera a elite. A taxa de aprendizagem determina quanto a política imita essa amostra: aumentar o passo nem sempre melhora o resultado.</p>
+</section>
+</section>
+<section id="limites-e-continuidade" class="sec">
+<h2>Limites e continuidade</h2>
+<p>Os resultados concretizam as limitações discutidas por Lapan (2020, <em>The cross-entropy method on FrozenLake</em>). Esperar o fim custa até 500 transições por episódio no CartPole; o teto ainda empata partidas longas. No lago, retornos 0/1 pouco variados tornam o corte pouco informativo. Por fim, todas as decisões de uma partida aceita recebem o mesmo peso na perda, mesmo as que atrasaram a meta: o filtro não atribui crédito individual. A robustez mencionada por Lapan (2020, <em>The cross-entropy method in practice</em>) depende da configuração: a média do carrinho variou de 192,17 a 408,73 entre <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,6</mn></mrow></semantics></math> e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,1</mn></mrow></semantics></math>.</p>
+<p>No lago, o escore <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><msup><mi>γ</mi><mi>T</mi></msup></mrow></semantics></math> favorece vitórias curtas (com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, seis e dez passos valem 0,53 e 0,35), mas vitórias de mesma duração ainda empatam. A variante de Lapan (2020, <em>The cross-entropy method on FrozenLake</em>) também amplia o lote para 100 e reaproveita elites antigas; aqui só o escore muda.</p>
+<p>Os métodos seguintes do curso atacam essas limitações. O Q-learning propaga valor a estados anteriores a partir de cada transição, sem esperar o fim da partida (Sutton e Barto, 2018, <em>Q-learning: Off-policy TD Control</em>). Na família baseada em política, o REINFORCE pesa cada escolha pelo retorno seguinte, em vez de um peso 0 ou 1 (Sutton e Barto, 2018, <em>REINFORCE: Monte Carlo Policy Gradient</em>).</p>
+</section>
+<section id="referências" class="sec referencias">
+<h2 class="unnumbered">Referências</h2>
+<p>De Boer, P.-T., Kroese, D. P., Mannor, S. e Rubinstein, R. Y. (2005). <em>A Tutorial on the Cross-Entropy Method</em>. Annals of Operations Research, 134, 19–67. DOI 10.1007/s10479-005-5724-z. Seções <em>A rare event simulation example</em>, <em>The CE method for rare event simulation</em>, <em>The CE-method for combinatorial optimization</em>, <em>Markovian decision process</em>. <a href="https://ris.utwente.nl/ws/portalfiles/portal/6700787/fulltext.pdf">Texto integral</a>.</p>
+<p>Farama Foundation (2025). <em>Gymnasium</em>, versão 1.1.1 utilizada no experimento. Dinâmica, recompensa e limites dos ambientes. <a href="https://gymnasium.farama.org/environments/classic_control/cart_pole/">CartPole</a>; <a href="https://gymnasium.farama.org/environments/toy_text/frozen_lake/">FrozenLake</a>.</p>
+<p>Kroese, D. P. (2011). <em>Cross-Entropy Method</em>. Wiley Encyclopedia of Operations Research and Management Science. <a href="https://doi.org/10.1002/9780470400531.eorms0210">DOI</a>. <a href="https://people.smp.uq.edu.au/DirkKroese/ps/eormsCE.pdf">PDF do autor</a>.</p>
+<p>Lapan, M. (2020). <em>Deep Reinforcement Learning Hands-On</em>, 2ª ed. Packt. Capítulo <em>The Cross-Entropy Method</em>: seções <em>The taxonomy of RL methods</em>, <em>The cross-entropy method in practice</em>, <em>The cross-entropy method on CartPole</em>, <em>The cross-entropy method on FrozenLake</em>, <em>The theoretical background of the cross-entropy method</em>. <a href="https://www.packtpub.com/en-us/product/deep-reinforcement-learning-hands-on-9781838826994">Livro</a>; <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition/tree/master/Chapter04">implementações do autor</a>.</p>
+<p>Lapan, M. (2024). <em>Deep Reinforcement Learning Hands-On</em>, 3ª ed. Packt. ISBN 978-1-83588-270-2. Capítulo <em>The Cross-Entropy Method</em>: seções <em>The cross-entropy method on CartPole</em> e <em>The cross-entropy method on FrozenLake</em>. <a href="https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Third-Edition/tree/main/Chapter04">Código em Gymnasium</a>.</p>
+<p>Leite, G. R. (2026). <em>Curso de Aprendizado por Reforço</em>. PPGI071, UFAL. Acesso em 17 nov. 2026. <a href="https://github.com/glauberrleite/curso-aprendizado-por-reforco">Glossário da disciplina</a>; <a href="https://github.com/glauberrleite/curso-aprendizado-por-reforco/tree/main/01-introducao">interação</a>; <a href="https://github.com/glauberrleite/curso-aprendizado-por-reforco/tree/main/02-multi-armed-bandit">bandits</a>; <a href="https://github.com/glauberrleite/curso-aprendizado-por-reforco/tree/main/03-markov-decision-processes">processos de decisão de Markov</a>.</p>
+<p>NumPy (2025). <em>numpy.percentile</em>, documentação da versão 2.2, método <code>linear</code>. <a href="https://numpy.org/doc/2.2/reference/generated/numpy.percentile.html">Documentação</a>.</p>
+<p>PyTorch (2025). <em>CrossEntropyLoss</em>, documentação da versão 2.9, caso de índices de classe. <a href="https://docs.pytorch.org/docs/2.9/generated/torch.nn.CrossEntropyLoss.html">Documentação</a>.</p>
+<p>Rubinstein, R. Y. e Kroese, D. P. (2004). <em>The Cross-Entropy Method: A Unified Approach to Combinatorial Optimization, Monte-Carlo Simulation, and Machine Learning</em>. Springer. Prefácio. <a href="https://doi.org/10.1007/978-1-4757-4321-0">Livro</a>.</p>
+<p>Sutton, R. S. e Barto, A. G. (2018). <em>Reinforcement Learning: An Introduction</em>, 2ª ed. MIT Press. Capítulos e seções consultados: <em>Multi-armed Bandits</em> (<em>Incremental Implementation</em>); <em>Finite Markov Decision Processes</em> (<em>Returns and Episodes</em>); <em>Dynamic Programming</em> (<em>Policy Evaluation (Prediction)</em>); <em>Monte Carlo Methods</em> (<em>Monte Carlo Control</em>); <em>Temporal-Difference Learning</em> (<em>Q-learning: Off-policy TD Control</em>); <em>Policy Gradient Methods</em> (<em>Policy Approximation and its Advantages</em>; <em>The Policy Gradient Theorem</em>; <em>REINFORCE: Monte Carlo Policy Gradient</em>). <a href="http://incompleteideas.net/book/the-book-2nd.html">Livro</a>.</p>
+<p>Towers, M. et al. (2024). <em>Gymnasium: A Standard Interface for Reinforcement Learning Environments</em>. <a href="https://arxiv.org/abs/2407.17032">arXiv:2407.17032</a>.</p>
+</section>
+</article>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

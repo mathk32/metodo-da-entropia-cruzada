@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#183e36">
+    <title>Glossário · Método da entropia cruzada</title>
+    <link rel="stylesheet" href="caderno.css">
+    <script defer src="glossario.js"></script>
+  </head>
+  <body>
+<a class="pulo" href="#conteudo">Ir ao conteúdo</a><header class="topo"><div class="bar"><a class="marca" href="index.html">Aprendizado por reforço</a><nav aria-label="Principal"><a href="index.html">Experimentos</a><a href="teoria.html">Teoria</a><a href="selecao.html">Seleção</a><a href="politica.html">Política</a><a href="glossario.html" aria-current="page">Glossário</a></nav></div></header>
+<main class="wrap" id="conteudo">
+      <header class="hero">
+        <p class="rotulo" data-tex="trecho-1">Consulta</p>
+        <h1>Glossário</h1>
+        <p data-tex="trecho-2">Definições e exemplos na notação usada nas contas e nas simulações.</p>
+      </header>
+      <section class="sec artigo">
+        <label for="busca" data-tex="trecho-3">Pesquisar um termo ou exemplo</label><input id="busca" type="search" placeholder="Por exemplo, percentil">
+        <p id="contagem" role="status"></p>
+        <dl class="gloss">
+          <div>
+            <dt data-tex="trecho-5">Ação</dt>
+            <dd data-tex="trecho-6">Escolha disponível ao agente em um estado. No carrinho, pode-se aplicar força à esquerda ou à direita.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-7">Adam</dt>
+            <dd data-tex="trecho-8">Otimizador que usa médias móveis do gradiente e de seu quadrado para ajustar a escala das atualizações. Lapan o emprega para treinar a rede do CartPole.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-9">Agente e ambiente</dt>
+            <dd data-tex="trecho-10">O agente escolhe a ação. O ambiente devolve a próxima observação e a recompensa. No lago, o sorteio do deslizamento pertence ao ambiente.</dd>
+          </div>
+          <div><dt data-tex="termo-0">Amostragem por importância</dt><dd data-tex="def-0">Estima uma esperança sob <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>P</mi></semantics></math> usando amostras de <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi></semantics></math> e pesos <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mi>/</mi><mi>q</mi></mrow></semantics></math>. A distribuição de coleta precisa cobrir os resultados relevantes.</dd></div><div>
+            <dt data-tex="trecho-11">Corte e percentil</dt>
+            <dd data-tex="trecho-12">Um percentil localiza uma posição na amostra ordenada. O corte inclusivo aceita empates no limiar. Se o percentil 70 for zero, todos os retornos não negativos passam.</dd>
+          </div>
+          <div><dt data-tex="termo-1">Decisões aceitas (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi></semantics></math>)</dt><dd data-tex="def-1">Total de passos dos episódios de elite. Dois episódios com 6 e 10 passos dão <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>=</mo><mn>16</mn></mrow></semantics></math> rótulos.</dd></div><div>
+            <dt data-tex="trecho-13">Desconto (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi></semantics></math>)</dt>
+            <dd data-tex="trecho-14">Peso relativo de um passo de espera. Se <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>0,9</mn></mrow></semantics></math>, uma recompensa unitária recebida após três ações contribui 0,81 para <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mn>0</mn></msub></semantics></math>.</dd>
+          </div>
+          <div><dt data-tex="termo-2">Desempenho esperado (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>)</dt><dd data-tex="def-2">Média teórica dos retornos em trajetórias geradas com os pesos atuais.</dd></div><div><dt data-tex="termo-3">Divergência de Kullback–Leibler (KL)</dt><dd data-tex="def-3">Para distribuições discretas, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><mrow><mi mathvariant="normal">K</mi><mi mathvariant="normal">L</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>p</mi><mo stretchy="false" form="postfix">‖</mo><mi>q</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mo>∑</mo><mi>x</mi></msub><mi>p</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">[</mo><mi>p</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>q</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo></mrow></semantics></math>. Vale zero quando coincidem e pode depender da ordem.</dd></div><div>
+            <dt data-tex="trecho-15">Elite</dt>
+            <dd data-tex="trecho-16">Episódios aceitos pelo corte do lote. Todas as decisões desses episódios entram no ajuste, inclusive uma ação ocasionalmente ruim.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-17">Entropia cruzada</dt>
+            <dd data-tex="trecho-18">Média do custo <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>−</mi><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> sob a distribuição de referência. Atribuir probabilidade 0,1 à ação registrada custa aproximadamente 2,30.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-19">Episódio e trajetória</dt>
+            <dd data-tex="trecho-20">O episódio é uma tentativa completa. A trajetória registra a sequência de estados, ações e recompensas. Chegar a um buraco encerra um episódio do lago.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-21">Esperança</dt>
+            <dd data-tex="trecho-22">Média teórica que pondera cada resultado pela sua probabilidade. Se os únicos retornos são 0 e 1, o retorno esperado é a probabilidade de sucesso.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-23">Estado e observação</dt>
+            <dd data-tex="trecho-24">O estado reúne a informação que governa a evolução do ambiente. A observação é a informação entregue ao agente. No CartPole deste trabalho, observam-se as quatro coordenadas do estado.</dd>
+          </div>
+          <div><dt data-tex="termo-4">Fração nominal de elite (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi></semantics></math>)</dt><dd data-tex="def-4">Proporção usada para definir o corte. Com <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0,3</mn></mrow></semantics></math>, usa-se o percentil 70. Empates podem alterar a proporção aceita.</dd></div><div>
+            <dt data-tex="trecho-25">Gradiente</dt>
+            <dd data-tex="trecho-26">Vetor das derivadas parciais da perda. Na saída softmax, a derivada por logit é a probabilidade prevista menos o indicador da ação observada.</dd>
+          </div>
+          <div><dt data-tex="termo-5">Indicador</dt><dd data-tex="def-5">Função que vale um quando a condição é satisfeita e zero caso contrário. Por exemplo, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn mathvariant="bold">𝟏</mn><mo stretchy="false" form="prefix">{</mo><msub><mi>A</mi><mi>t</mi></msub><mo>=</mo><mi>b</mi><mo stretchy="false" form="postfix">}</mo></mrow></semantics></math>.</dd></div><div><dt data-tex="termo-6">Limiar (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>k</mi></msub></semantics></math>)</dt><dd data-tex="def-6">Valor do corte calculado a partir dos escores do lote de índice <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi></semantics></math>.</dd></div><div>
+            <dt data-tex="trecho-27">Logit e softmax</dt>
+            <dd data-tex="trecho-28">Logit é a pontuação de uma ação antes da normalização. A softmax exponencia as pontuações e divide pela soma. Os logits <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mspace width="0.167em"></mspace><mn>2</mn><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math> dão probabilidades <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mi>/</mi><mn>3</mn><mo>,</mo><mn>2</mn><mi>/</mi><mn>3</mn><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-29">Lote</dt>
+            <dd data-tex="trecho-30">Conjunto de episódios coletados antes de uma atualização. Nas medições em Python, cada lote contém dezesseis tentativas.</dd>
+          </div>
+          <div><dt data-tex="termo-7">On-policy</dt><dd data-tex="def-7">Coleta feita com a política atual. A versão básica do CEM joga um novo lote após cada ajuste.</dd></div><div><dt data-tex="termo-8">Parâmetros (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi></semantics></math>)</dt><dd data-tex="def-8">Pesos que determinam as preferências por ação. No lago, há uma linha de pesos por casa.</dd></div><div>
+            <dt data-tex="trecho-31">Política (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi></semantics></math>)</dt>
+            <dd data-tex="trecho-32">Distribuição das ações dado o estado. Uma política uniforme no lago atribui probabilidade <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mn>4</mn></mrow></semantics></math> a cada uma das quatro ações.</dd>
+          </div>
+          <div><dt data-tex="termo-9">Quantil</dt><dd data-tex="def-9">Valor que delimita uma fração da amostra ordenada. O quantil linear de ordem 0,5 entre 2 e 6 vale 4.</dd></div><div>
+            <dt data-tex="trecho-33">Recompensa (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>R</mi></semantics></math>)</dt>
+            <dd data-tex="trecho-34">Número devolvido após uma ação. Em FrozenLake, a chegada à meta vale 1 e uma transição comum vale 0.</dd>
+          </div>
+          <div>
+            <dt data-tex="trecho-35">Retorno (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi></semantics></math>)</dt>
+            <dd data-tex="trecho-36">Soma das recompensas futuras, com o desconto escolhido. Com recompensa de um ponto por passo e <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>=</mo><mn>1</mn></mrow></semantics></math>, um episódio de 28 passos vale 28.</dd>
+          </div>
+          <div><dt data-tex="termo-10">Sem modelo</dt><dd data-tex="def-10">O agente aprende das transições observadas sem precisar da distribuição de transição do ambiente.</dd></div><div>
+            <dt data-tex="trecho-37">Semente</dt>
+            <dd data-tex="trecho-38">Inteiro que inicializa o gerador pseudoaleatório. Repetir a configuração e a semente no mesmo simulador permite repetir a sequência de sorteios.</dd>
+          </div>
+          <div><dt data-tex="termo-11">Taxa de aprendizagem (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi></semantics></math>)</dt><dd data-tex="def-11">Fator que multiplica o gradiente na atualização dos pesos. Duplicar a taxa duplica o primeiro deslocamento com o mesmo gradiente.</dd></div><div>
+            <dt data-tex="trecho-39">Verossimilhança</dt>
+            <dd data-tex="trecho-40">Probabilidade atribuída aos dados observados, considerada como função dos parâmetros. Para D, E, D em um estado, vale <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>p</mi><mn>2</mn></msup><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo></mrow></semantics></math>.</dd>
+          </div>
+        </dl>
+        <a href="teoria.html">Ver os conceitos na derivação →</a>
+      </section>
+    </main>
+    <footer class="rodape"><div class="wrap"><p>Matheus Kennedy T. Santos · PPGI071 · UFAL · 2026.2<br>Professor Glauber Rodrigues Leite · <a href="https://opensource.org/license/mit">Licença MIT</a></p><p>Codex e Claude foram usados para montar o site e ligar as anotações do autor numa linha lógica de raciocínio; o Claude também apoiou a revisão.</p></div></footer>
+  </body>
+</html>

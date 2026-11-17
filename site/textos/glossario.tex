@@ -1,0 +1,188 @@
+%%% trecho-1
+Consulta
+
+%%% trecho-2
+Definições e exemplos na notação usada nas contas e nas simulações.
+
+%%% trecho-3
+Pesquisar um termo ou exemplo
+
+%%% trecho-5
+Ação
+
+%%% trecho-6
+Escolha disponível ao agente em um estado. No carrinho, pode-se aplicar força à esquerda ou à direita.
+
+%%% trecho-7
+Adam
+
+%%% trecho-8
+Otimizador que usa médias móveis do gradiente e de seu quadrado para ajustar a escala das atualizações. Lapan o emprega para treinar a rede do CartPole.
+
+%%% trecho-9
+Agente e ambiente
+
+%%% trecho-10
+O agente escolhe a ação. O ambiente devolve a próxima observação e a recompensa. No lago, o sorteio do deslizamento pertence ao ambiente.
+
+%%% trecho-11
+Corte e percentil
+
+%%% trecho-12
+Um percentil localiza uma posição na amostra ordenada. O corte inclusivo aceita empates no limiar. Se o percentil 70 for zero, todos os retornos não negativos passam.
+
+%%% trecho-13
+Desconto ($\gamma$)
+
+%%% trecho-14
+Peso relativo de um passo de espera. Se $\gamma=0{,}9$, uma recompensa unitária recebida após três ações contribui 0,81 para $G_0$.
+
+%%% trecho-15
+Elite
+
+%%% trecho-16
+Episódios aceitos pelo corte do lote. Todas as decisões desses episódios entram no ajuste, inclusive uma ação ocasionalmente ruim.
+
+%%% trecho-17
+Entropia cruzada
+
+%%% trecho-18
+Média do custo $-\ln\pi(a\mid s)$ sob a distribuição de referência. Atribuir probabilidade 0,1 à ação registrada custa aproximadamente 2,30.
+
+%%% trecho-19
+Episódio e trajetória
+
+%%% trecho-20
+O episódio é uma tentativa completa. A trajetória registra a sequência de estados, ações e recompensas. Chegar a um buraco encerra um episódio do lago.
+
+%%% trecho-21
+Esperança
+
+%%% trecho-22
+Média teórica que pondera cada resultado pela sua probabilidade. Se os únicos retornos são 0 e 1, o retorno esperado é a probabilidade de sucesso.
+
+%%% trecho-23
+Estado e observação
+
+%%% trecho-24
+O estado reúne a informação que governa a evolução do ambiente. A observação é a informação entregue ao agente. No CartPole deste trabalho, observam-se as quatro coordenadas do estado.
+
+%%% trecho-25
+Gradiente
+
+%%% trecho-26
+Vetor das derivadas parciais da perda. Na saída softmax, a derivada por logit é a probabilidade prevista menos o indicador da ação observada.
+
+%%% trecho-27
+Logit e softmax
+
+%%% trecho-28
+Logit é a pontuação de uma ação antes da normalização. A softmax exponencia as pontuações e divide pela soma. Os logits $(0,\ln 2)$ dão probabilidades $(1/3,2/3)$.
+
+%%% trecho-29
+Lote
+
+%%% trecho-30
+Conjunto de episódios coletados antes de uma atualização. Nas medições em Python, cada lote contém dezesseis tentativas.
+
+%%% trecho-31
+Política ($\pi$)
+
+%%% trecho-32
+Distribuição das ações dado o estado. Uma política uniforme no lago atribui probabilidade $1/4$ a cada uma das quatro ações.
+
+%%% trecho-33
+Recompensa ($R$)
+
+%%% trecho-34
+Número devolvido após uma ação. Em FrozenLake, a chegada à meta vale 1 e uma transição comum vale 0.
+
+%%% trecho-35
+Retorno ($G$)
+
+%%% trecho-36
+Soma das recompensas futuras, com o desconto escolhido. Com recompensa de um ponto por passo e $\gamma=1$, um episódio de 28 passos vale 28.
+
+%%% trecho-37
+Semente
+
+%%% trecho-38
+Inteiro que inicializa o gerador pseudoaleatório. Repetir a configuração e a semente no mesmo simulador permite repetir a sequência de sorteios.
+
+%%% trecho-39
+Verossimilhança
+
+%%% trecho-40
+Probabilidade atribuída aos dados observados, considerada como função dos parâmetros. Para D, E, D em um estado, vale $p^2(1-p)$.
+
+%%% termo-0
+Amostragem por importância
+
+%%% def-0
+Estima uma esperança sob $P$ usando amostras de $q$ e pesos $P/q$. A distribuição de coleta precisa cobrir os resultados relevantes.
+
+%%% termo-1
+Decisões aceitas ($M$)
+
+%%% def-1
+Total de passos dos episódios de elite. Dois episódios com 6 e 10 passos dão $M=16$ rótulos.
+
+%%% termo-2
+Desempenho esperado ($J(\theta)$)
+
+%%% def-2
+Média teórica dos retornos em trajetórias geradas com os pesos atuais.
+
+%%% termo-3
+Divergência de Kullback--Leibler (KL)
+
+%%% def-3
+Para distribuições discretas, $D_{\mathrm{KL}}(p\Vert q)=\sum_x p(x)\ln[p(x)/q(x)]$. Vale zero quando coincidem e pode depender da ordem.
+
+%%% termo-4
+Fração nominal de elite ($\rho$)
+
+%%% def-4
+Proporção usada para definir o corte. Com $\rho=0{,}3$, usa-se o percentil 70. Empates podem alterar a proporção aceita.
+
+%%% termo-5
+Indicador
+
+%%% def-5
+Função que vale um quando a condição é satisfeita e zero caso contrário. Por exemplo, $\mathbf 1\{A_t=b\}$.
+
+%%% termo-6
+Limiar ($c_k$)
+
+%%% def-6
+Valor do corte calculado a partir dos escores do lote de índice $k$.
+
+%%% termo-7
+On-policy
+
+%%% def-7
+Coleta feita com a política atual. A versão básica do CEM joga um novo lote após cada ajuste.
+
+%%% termo-8
+Parâmetros ($\theta$)
+
+%%% def-8
+Pesos que determinam as preferências por ação. No lago, há uma linha de pesos por casa.
+
+%%% termo-9
+Quantil
+
+%%% def-9
+Valor que delimita uma fração da amostra ordenada. O quantil linear de ordem 0,5 entre 2 e 6 vale 4.
+
+%%% termo-10
+Sem modelo
+
+%%% def-10
+O agente aprende das transições observadas sem precisar da distribuição de transição do ambiente.
+
+%%% termo-11
+Taxa de aprendizagem ($\alpha$)
+
+%%% def-11
+Fator que multiplica o gradiente na atualização dos pesos. Duplicar a taxa duplica o primeiro deslocamento com o mesmo gradiente.
